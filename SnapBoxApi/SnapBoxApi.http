@@ -1,0 +1,6 @@
+@SnapBoxApi_HostAddress = http://localhost:5160
+
+GET {{SnapBoxApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
