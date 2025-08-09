@@ -7,7 +7,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    permissions:
+      contents: read 
 
     steps:
     - uses: actions/checkout@v4
@@ -18,13 +20,13 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore SnapBoxApi/SnapBoxApi.sln
 
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build SnapBoxApi/SnapBoxApi.csproj --no-restore --configuration Release
 
     - name: Publish
-      run: dotnet publish --no-build --configuration Release --output ./output
+      run: dotnet publish SnapBoxApi/SnapBoxApi.csproj --no-build --configuration Release --output ./output
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -33,22 +35,25 @@ jobs:
         path: ./output
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
 
     steps:
     - uses: actions/download-artifact@v4
       with:
         name: app-artifact
-        path: ./output
 
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Lisää tämä secret GitHub-repossa (Azure SPN JSON)
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9639584D5D2B4CFCB214D752E503DD51 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_75E30D0BE9EC4A248A327266B08F94B2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_30638FBA33A2436CB277FC28B5AA3ED6 }}
 
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: your-azure-webapp-name  # Azure Web App -nimesi
-        package: ./output
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'snapboxit'
+          slot-name: 'Production'
+          package: .
