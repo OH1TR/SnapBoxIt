@@ -1,55 +1,130 @@
-﻿using SnapBoxApi.Model;
+﻿using Microsoft.Azure.Cosmos;
+using SnapBoxApi.Model;
+using System.Collections.ObjectModel;
 using System.Net;
-using Microsoft.Azure.Cosmos;
 
 
 namespace SnapBoxApi.Services
 {
     public class CosmosDbService
     {
-        private readonly Container _container;
+        private readonly Microsoft.Azure.Cosmos.Container _container;
 
         public CosmosDbService(IConfiguration configuration)
         {
             var endpoint = configuration["CosmosDb:Endpoint"];
             var key = configuration["CosmosDb:Key"];
             var databaseName = configuration["CosmosDb:DatabaseName"];
-            var containerName = configuration["CosmosDb:ContainerName"];
+            var containerName = "Items";
 
             var cosmosClient = new CosmosClient(endpoint, key);
-            var database = cosmosClient.GetDatabase(databaseName);
-            _container = database.GetContainer(containerName);
+
+            // Ensure database exists
+            var databaseResponse = cosmosClient.CreateDatabaseIfNotExistsAsync(databaseName).GetAwaiter().GetResult();
+            var database = databaseResponse.Database;
+
+            List<Embedding> embeddings = new List<Embedding>()
+              {
+                  new Embedding()
+                  {
+                      Path = "/TitleEmbedding",
+                      DataType = VectorDataType.Float32,
+                      DistanceFunction = DistanceFunction.Cosine,
+                      Dimensions = 1536,
+                  },
+                  new Embedding()
+                  {
+                      Path = "/CategoryEmbedding",
+                      DataType = VectorDataType.Float32,
+                      DistanceFunction = DistanceFunction.Cosine,
+                      Dimensions = 1536,
+                  },
+                  new Embedding()
+                  {
+                      Path = "/DetailedDescriptionEmbedding",
+                      DataType = VectorDataType.Float32,
+                      DistanceFunction = DistanceFunction.Cosine,
+                      Dimensions = 1536,
+                  },
+                  new Embedding()
+                  {
+                      Path = "/FullTextEmbedding",
+                      DataType = VectorDataType.Float32,
+                      DistanceFunction = DistanceFunction.Cosine,
+                      Dimensions = 1536,
+                  }
+              };
+            Collection<Embedding> collection = new Collection<Embedding>(embeddings);
+            // Ensure container exists (partition key path must match your ItemDto, e.g. "/partitionKey")
+
+            var containerProperties = new ContainerProperties
+            {
+                Id = containerName,
+                PartitionKeyPath = "/PartitionKey",
+                VectorEmbeddingPolicy = new(collection),
+                IndexingPolicy = new IndexingPolicy()
+                {
+                    VectorIndexes = new()
+                        {
+                            new VectorIndexPath()
+                            {
+                                Path = "/TitleEmbedding",
+                                Type = VectorIndexType.QuantizedFlat,
+                            },
+                            new VectorIndexPath()
+                            {
+                                Path = "/CategoryEmbedding",
+                                Type = VectorIndexType.QuantizedFlat,
+                            },
+                            new VectorIndexPath()
+                            {
+                                Path = "/DetailedDescriptionEmbedding",
+                                Type = VectorIndexType.QuantizedFlat,
+                            },
+                             new VectorIndexPath()
+                            {
+                                Path = "/FullTextEmbedding",
+                                Type = VectorIndexType.QuantizedFlat,
+                            }
+                        },
+
+                },
+            };
+            containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/*" });
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/TitleEmbedding/*" });
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/CategoryEmbedding/*" });
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/DetailedDescriptionEmbedding/*" });
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/FullTextEmbedding/*" });
+
+            var containerResponse = database.CreateContainerIfNotExistsAsync(
+                containerProperties).GetAwaiter().GetResult();
+
+            _container = containerResponse.Container;
         }
 
-        /// <summary>
-        /// Adds an image entry (metadata) to Cosmos DB.
-        /// Sets Id = BlobId for simplicity.
-        /// </summary>
-        public async Task AddImageEntryAsync(ImageData data)
+        public async Task AddItemAsync(ItemDto data)
         {
-            if (string.IsNullOrEmpty(data.BlobId))
-                throw new ArgumentException("BlobId is required.");
-
-            data.Id = data.BlobId; // Use BlobId as the document ID
-
             try
             {
-                await _container.CreateItemAsync(data, new PartitionKey(data.BlobId));
+                if (string.IsNullOrWhiteSpace(data.PartitionKey))
+                    data.PartitionKey = data.Category ?? "item";
+
+                await _container.CreateItemAsync(data, new PartitionKey(data.PartitionKey));
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                throw new InvalidOperationException($"Document with ID {data.Id} already exists.");
+                throw new InvalidOperationException($"Document with ID {data.id} already exists.");
             }
         }
 
         /// <summary>
         /// Retrieves an image entry by BlobId.
         /// </summary>
-        public async Task<ImageData?> GetImageEntryAsync(string blobId)
+        public async Task<ItemDto?> GetImageEntryAsync(string Id)
         {
             try
             {
-                var response = await _container.ReadItemAsync<ImageData>(blobId, new PartitionKey(blobId));
+                var response = await _container.ReadItemAsync<ItemDto>(Id, new PartitionKey(Id));
                 return response.Resource;
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -63,15 +138,39 @@ namespace SnapBoxApi.Services
         /// Example: Queries entries where Description contains the specified keyword.
         /// Uses parameterized SQL to avoid injection.
         /// </summary>
-        public async Task<IEnumerable<ImageData>> QueryImageEntriesAsync(string keyword)
+        public async Task<IEnumerable<ItemDto>> QueryImageEntriesAsync(string keyword)
         {
             var queryText = "SELECT * FROM c WHERE CONTAINS(c.Description, @keyword, true)";
             var queryDefinition = new QueryDefinition(queryText)
                 .WithParameter("@keyword", keyword);
 
-            var iterator = _container.GetItemQueryIterator<ImageData>(queryDefinition);
+            var iterator = _container.GetItemQueryIterator<ItemDto>(queryDefinition);
 
-            var results = new List<ImageData>();
+            var results = new List<ItemDto>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                results.AddRange(response);
+            }
+
+            return results;
+        }
+
+        public async Task<List<ItemDto>> QueryTopByFullTextEmbeddingAsync(float[] queryVector, int topN = 1)
+        {
+            // Cosmos DB expects the vector as a JSON array
+            var query = $@"
+            SELECT TOP {topN} *
+            FROM c
+            ORDER BY VectorDistance(c.FullTextEmbedding, @query_vector, false, {{'distanceFunction':'cosine', 'dataType':'float32'}})
+    ";
+
+            var queryDefinition = new QueryDefinition(query)
+                .WithParameter("@query_vector", queryVector);
+
+            var iterator = _container.GetItemQueryIterator<ItemDto>(queryDefinition);
+
+            var results = new List<ItemDto>();
             while (iterator.HasMoreResults)
             {
                 var response = await iterator.ReadNextAsync();

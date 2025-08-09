@@ -2,3 +2,5 @@
 /SnapBoxApi/bin
 /SnapBoxApi/obj
 *.tmp
+/TestClient/bin
+/TestClient/obj

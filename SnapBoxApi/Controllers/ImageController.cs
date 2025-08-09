@@ -5,6 +5,7 @@ using OpenAI;
 using OpenAI.Chat;
 using SnapBoxApi.Model;
 using SnapBoxApi.Services;
+using System.IO;
 using System.Text;
 
 namespace SnapBoxApi.Controllers
@@ -18,12 +19,14 @@ namespace SnapBoxApi.Controllers
         private readonly BlobServiceClient _blobServiceClient;
         private readonly CosmosDbService _cosmosService;
         private readonly OpenAIClient _openAIClient;
+        private readonly ImageDescriptionService _imageDescriptionService;
 
-        public ImageController(BlobServiceClient blobServiceClient, CosmosDbService cosmosService, OpenAIClient openAIClient)
+        public ImageController(BlobServiceClient blobServiceClient, CosmosDbService cosmosService, OpenAIClient openAIClient, ImageDescriptionService imageDescriptionService)
         {
             _blobServiceClient = blobServiceClient;
             _cosmosService=cosmosService;
             _openAIClient = openAIClient;
+            _imageDescriptionService = imageDescriptionService;
         }
 
         [HttpPut("upload")]
@@ -41,14 +44,20 @@ namespace SnapBoxApi.Controllers
             {
                 await blobClient.UploadAsync(stream, true);
             }
+      
+            var ms = new MemoryStream();
+            using (var stream = file.OpenReadStream())
+            {
+                stream.CopyTo(ms);
+            }
+           
+            ms.Position = 0;
 
+            var description = await _imageDescriptionService.GetImageDescriptionAsync(ms);
+            description.BlobId = blobId;
+            await _cosmosService.AddItemAsync(description);    
 
-
-            // Tallenna MongoDB:hen
-            var imageData = new ImageData { BlobId = blobId, Description = "" };
-            await _cosmosService.AddImageEntryAsync(imageData);
-
-            return Ok(imageData);
+            return Ok(description);
         }
     }
 }
