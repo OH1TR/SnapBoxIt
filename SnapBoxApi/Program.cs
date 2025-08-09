@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using OpenAI;
 using OpenAI.Chat;
 using SnapBoxApi.Services;
+using SnapBoxApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddScoped<ImageDescriptionService>();
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseMiddleware<BasicAuthMiddleware>();
 app.MapControllers();
 
 app.Run();

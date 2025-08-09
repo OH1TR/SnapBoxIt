@@ -1,15 +1,26 @@
 ﻿using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace TestClient
 {
     internal class Program
     {
         private static readonly HttpClient httpClient = new HttpClient();
+        private static IConfiguration? configuration;
         
         static async Task Main(string[] args)
         {
+            // Build configuration
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddUserSecrets<Program>();
+            
+            configuration = builder.Build();
+            
             // Set the base URL for your API
-            string baseUrl = "http://localhost:5160"; // Adjust port as needed
+            //string baseUrl = "http://localhost:5160"; // Adjust port as needed
+            string baseUrl = "https://snapboxit.azurewebsites.net"; // Adjust port as needed
             string imagePath = "Prototype_image.png"; // Path to your test image
             
             try
@@ -30,6 +41,26 @@ namespace TestClient
                 Console.WriteLine("Please place a test image file in the TestClient directory or update the path.");
                 return;
             }
+            
+            // Add Basic Authentication header from configuration
+            string? username = configuration?["BasicAuth:Username"];
+            string? password = configuration?["BasicAuth:Password"];
+            
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Error: Username or password not found in configuration.");
+                Console.WriteLine("Please set user secrets or update appsettings.json:");
+                Console.WriteLine("  dotnet user-secrets set \"BasicAuth:Username\" \"your-username\"");
+                Console.WriteLine("  dotnet user-secrets set \"BasicAuth:Password\" \"your-password\"");
+                return;
+            }
+            
+            string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+            
+            // Provide feedback about credential source (without revealing the password)
+            Console.WriteLine($"Using authentication for user: {username}");
+            Console.WriteLine("Credentials loaded from configuration (user secrets take priority over appsettings.json)");
             
             using var form = new MultipartFormDataContent();
             using var fileStream = File.OpenRead(imagePath);
