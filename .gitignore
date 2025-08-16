@@ -4,3 +4,8 @@
 *.tmp
 /TestClient/bin
 /TestClient/obj
+/SnapBoxApp/bin
+/SnapBoxApp/obj
+/Packages
+.DS_Store
+*.user
