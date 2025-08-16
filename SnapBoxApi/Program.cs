@@ -17,6 +17,7 @@ builder.Services.AddSingleton<OpenAIClient>(sp =>
     new OpenAIClient(builder.Configuration["OpenAI:ApiKey"]));
 builder.Services.AddSingleton<CosmosDbService>();
 builder.Services.AddScoped<ImageDescriptionService>();
+builder.Services.AddScoped<DataService>();
 
 var app = builder.Build();
 

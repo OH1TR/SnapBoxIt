@@ -19,13 +19,26 @@ namespace TestClient
             configuration = builder.Build();
             
             // Set the base URL for your API
-            //string baseUrl = "http://localhost:5160"; // Adjust port as needed
-            string baseUrl = "https://snapboxit.azurewebsites.net"; // Adjust port as needed
-            string imagePath = "Prototype_image.png"; // Path to your test image
+            string baseUrl = "http://localhost:5160"; // Adjust port as needed
+            //string baseUrl = "https://snapboxit.azurewebsites.net"; // Adjust port as needed
+            string imagePath = "pr.jpg"; // Path to your test image
             
             try
             {
-                await UploadImageAsync(baseUrl, imagePath);
+               // await UploadImageAsync(baseUrl, imagePath);
+                
+                // Also test the FindItems query
+                Console.WriteLine("\n--- Testing FindItems Query ---");
+                await QueryFindItemsAsync(baseUrl, args[0], 3);
+
+                // Test GetImageAsync
+                Console.WriteLine("\n--- Testing GetImageAsync ---");
+                string blobId = "c4885d00-39f0-499d-bc83-7a9a647aab36"; // Replace with a valid blob ID from your test data
+                await GetImageAsync(baseUrl, blobId,true);
+                
+                // Test GetImageAsync with thumbnail
+                Console.WriteLine("\n--- Testing GetImageAsync with Thumbnail ---");
+                //await GetImageAsync(baseUrl, blobId, true);
             }
             catch (Exception ex)
             {
@@ -94,6 +107,110 @@ namespace TestClient
             {
                 string errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Upload failed with status: {response.StatusCode}");
+                Console.WriteLine($"Error: {errorContent}");
+            }
+        }
+
+        static async Task QueryFindItemsAsync(string baseUrl, string searchQuery, int count = 5)
+        {
+            // Add Basic Authentication header from configuration
+            string? username = configuration?["BasicAuth:Username"];
+            string? password = configuration?["BasicAuth:Password"];
+            
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Error: Username or password not found in configuration.");
+                return;
+            }
+            
+            string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+            
+            // Create the search request JSON
+            var searchRequest = new
+            {
+                Query = searchQuery,
+                Count = count
+            };
+            
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(searchRequest);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            
+            string url = $"{baseUrl}/api/Data/FindItems";
+            Console.WriteLine($"Querying FindItems at: {url}");
+            Console.WriteLine($"Search query: '{searchQuery}' (max results: {count})");
+            
+            var response = await httpClient.PostAsync(url, content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Query successful!");
+                Console.WriteLine($"Response: {responseContent}");
+            }
+            else
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Query failed with status: {response.StatusCode}");
+                Console.WriteLine($"Error: {errorContent}");
+            }
+        }
+
+        static async Task GetImageAsync(string baseUrl, string blobId, bool thumbnail = false)
+        {
+            // Add Basic Authentication header from configuration
+            string? username = configuration?["BasicAuth:Username"];
+            string? password = configuration?["BasicAuth:Password"];
+            
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Error: Username or password not found in configuration.");
+                return;
+            }
+            
+            string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+            
+            string url = $"{baseUrl}/api/Data/Image/{blobId}";
+            if (thumbnail)
+            {
+                url += "?thumb=true";
+            }
+            
+            Console.WriteLine($"Getting image from: {url}");
+            Console.WriteLine($"Blob ID: {blobId}, Thumbnail: {thumbnail}");
+            
+            var response = await httpClient.GetAsync(url);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // Get the image content
+                var imageBytes = await response.Content.ReadAsByteArrayAsync();
+                string contentType = response.Content.Headers.ContentType?.ToString() ?? "unknown";
+                
+                Console.WriteLine("Image retrieved successfully!");
+                Console.WriteLine($"Content-Type: {contentType}");
+                Console.WriteLine($"Image size: {imageBytes.Length} bytes");
+                
+                // Optionally save the image to a file
+                string fileName = thumbnail ? $"thumb_{blobId}" : blobId;
+                string extension = contentType switch
+                {
+                    "image/jpeg" => ".jpg",
+                    "image/png" => ".png",
+                    "image/gif" => ".gif",
+                    "image/bmp" => ".bmp",
+                    _ => ".bin"
+                };
+                
+                string outputPath = Path.Combine(Directory.GetCurrentDirectory(), $"{fileName}{extension}");
+                await File.WriteAllBytesAsync(outputPath, imageBytes);
+                Console.WriteLine($"Image saved to: {outputPath}");
+            }
+            else
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to retrieve image with status: {response.StatusCode}");
                 Console.WriteLine($"Error: {errorContent}");
             }
         }
