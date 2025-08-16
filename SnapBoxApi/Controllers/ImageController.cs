@@ -29,15 +29,16 @@ namespace SnapBoxApi.Controllers
             _imageDescriptionService = imageDescriptionService;
         }
 
-        [HttpPut("upload")]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+    [HttpPut("upload/{boxId}")]
+    public async Task<IActionResult> UploadImage(string boxId, IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded.");
 
             // Tallenna Azure Blob Storageen
             var containerClient = _blobServiceClient.GetBlobContainerClient("images"); // Kontin nimi
-            var blobId = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            // Käytetään boxId:tä blobId:ssä
+            var blobId = $"{Guid.NewGuid()}";
             var blobClient = containerClient.GetBlobClient(blobId);
 
             using (var stream = file.OpenReadStream())
@@ -55,9 +56,10 @@ namespace SnapBoxApi.Controllers
 
             var description = await _imageDescriptionService.GetImageDescriptionAsync(ms);
             description.BlobId = blobId;
+            description.BoxId = boxId;
             await _cosmosService.AddItemAsync(description);    
 
-            return Ok(description);
+            return Ok(description.ToSimpleDto());
         }
     }
 }

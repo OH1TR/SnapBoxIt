@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage
 		await Shell.Current.GoToAsync(nameof(UploadPage));
 	}
 
-		private async void OnSettingsClicked(object? sender, EventArgs e)
+	private async void OnSettingsClicked(object? sender, EventArgs e)
 	{
 		await Shell.Current.GoToAsync(nameof(SettingsPage));
 	}

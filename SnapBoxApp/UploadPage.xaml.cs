@@ -12,61 +12,48 @@ public partial class UploadPage : ContentPage
 	public UploadPage()
 	{
 		InitializeComponent();
-		//camera.MediaCaptured += OnCaptureClicked;
 	}
 
-	private async void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
-	{
-		try
-		{
-			using var stream = new MemoryStream();
-			await e.Media.CopyToAsync(stream);
-			stream.Position = 0;
-			var response = await _apiService.Upload(stream);
-			if (response.IsSuccessStatusCode)
-			{
-				await DisplayAlert("Success", "Photo uploaded successfully!", "OK");
-			}
-			else
-			{
-				await DisplayAlert("Upload Failed", $"Server returned: {response.StatusCode}", "OK");
-			}
-		}
-		catch (Exception ex)
-		{
-			await DisplayAlert("Error", $"An error occurred while capturing or uploading the photo: {ex.Message}", "OK");
-		}
-	}
-	// Remove OnMediaCaptured if you are not using it, or replace MediaCapturedEventArgs with the correct type from your camera library.
-	// If you intended to use OnCaptureClicked only, you can safely remove this method.
-
+	
 	private async void OnCaptureClicked(object? sender, EventArgs e)
 	{
-		try
-		{
-			var startCameraPreviewTCS = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-			var photo = await camera.CaptureImage(startCameraPreviewTCS.Token);
+		   try
+		   {
+			string boxId=BoxName.Text;
+			MainThread.BeginInvokeOnMainThread(() => {
+			   CaptureBtn.IsEnabled = false;
+			});
+			   var startCameraPreviewTCS = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+			   var photo = await camera.CaptureImage(startCameraPreviewTCS.Token);
 
-
-			if (photo != null)
-			{
-				using var stream = new MemoryStream();
-				await photo.CopyToAsync(stream);
-				stream.Position = 0;
-				var response = await _apiService.Upload(stream);
-				if (response.IsSuccessStatusCode)
-				{
-					await DisplayAlert("Success", "Photo uploaded successfully!", "OK");
-				}
-				else
-				{
-					await DisplayAlert("Upload Failed", $"Server returned: {response.StatusCode}", "OK");
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			await DisplayAlert("Error", $"An error occurred while capturing or uploading the photo: {ex.Message}", "OK");
-		}
+			   if (photo != null)
+			   {
+				   using var stream = new MemoryStream();
+				   await photo.CopyToAsync(stream);
+				   stream.Position = 0;
+				   var response = await _apiService.Upload(stream, boxId);
+				   if (response.IsSuccessStatusCode)
+				   {
+					   var json = await response.Content.ReadAsStringAsync();
+					   var item = System.Text.Json.JsonSerializer.Deserialize<Model.ItemSimpleDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+					   BindingContext = item;
+					   await DisplayAlert("Success", $"Photo uploaded successfully! Item ID: {item?.id}", "OK");
+				   }
+				   else
+				   {
+					   await DisplayAlert("Upload Failed", $"Server returned: {response.StatusCode}", "OK");
+				   }
+			   }
+		   }
+		   catch (Exception ex)
+		   {
+			   await DisplayAlert("Error", $"An error occurred while capturing or uploading the photo: {ex.Message}", "OK");
+		   }
+		   finally
+		   {
+				MainThread.BeginInvokeOnMainThread(() => {
+			   CaptureBtn.IsEnabled = true;
+				});
+		   }
 	}
 }

@@ -28,7 +28,7 @@ public class ApiService
             new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
     }
 
-    public async Task<HttpResponseMessage> Upload(MemoryStream imageStream)
+    public async Task<HttpResponseMessage> Upload(MemoryStream imageStream,string boxId)
     {
         imageStream.Position = 0;
         using var form = new MultipartFormDataContent();
@@ -38,7 +38,7 @@ public class ApiService
 
 
         content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        var response = await _httpClient.PutAsync(_apiUrl + "/Image/upload", form).ConfigureAwait(false);
+        var response = await _httpClient.PutAsync(_apiUrl + "/Image/upload/"+Uri.EscapeDataString(boxId), form).ConfigureAwait(false);
         return response;
     }
 }
