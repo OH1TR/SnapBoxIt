@@ -35,6 +35,11 @@
                 Text="Settings" 
                 Clicked="OnSettingsClicked"
                 HorizontalOptions="Fill" />
+             <Button
+                x:Name="SearchBtn"
+                Text="Haku" 
+                Clicked="OnSearchClicked"
+                HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
 

@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
+using SnapBoxApp.Model;
 
 namespace SnapBoxApp.Services;
 
@@ -40,5 +42,38 @@ public class ApiService
         content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         var response = await _httpClient.PutAsync(_apiUrl + "/Image/upload/"+Uri.EscapeDataString(boxId), form).ConfigureAwait(false);
         return response;
+    }
+
+    public async Task<List<ItemSimpleDto>> SearchItems(SearchRequest request)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.PostAsync(_apiUrl + "/Data/FindItems", content).ConfigureAwait(false);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var items = JsonSerializer.Deserialize<List<ItemSimpleDto>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return items ?? new List<ItemSimpleDto>();
+            }
+            
+            return new List<ItemSimpleDto>();
+        }
+        catch (Exception)
+        {
+            return new List<ItemSimpleDto>();
+        }
+    }
+
+    public string GetImageUrl(string blobId, bool thumbnail = false)
+    {
+        var thumbParam = thumbnail ? "?thumb=true" : "";
+        return $"{_apiUrl}/Data/Image/{Uri.EscapeDataString(blobId)}{thumbParam}";
     }
 }

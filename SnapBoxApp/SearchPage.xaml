@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="SnapBoxApp.SearchPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:SnapBoxApp.Converters"
+             Title="Haku">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20">
+        <!-- Search Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,0,20">
+            <Entry x:Name="SearchEntry" 
+                   Grid.Column="0"
+                   Placeholder="Syötä hakutermi..."
+                   Text="{Binding SearchQuery}"
+                   ReturnCommand="{Binding SearchCommand}"
+                   ReturnCommandParameter="{Binding SearchQuery}"/>
+            <Button x:Name="SearchButton" 
+                    Grid.Column="1"
+                    Text="Hae"
+                    Command="{Binding SearchCommand}"
+                    CommandParameter="{Binding SearchQuery}"
+                    BackgroundColor="#007AFF"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Padding="20,10"/>
+        </Grid>
+
+        <!-- Results List -->
+        <CollectionView Grid.Row="1" 
+                        ItemsSource="{Binding SearchResults}"
+                        IsVisible="{Binding HasResults}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10" ColumnDefinitions="Auto,*" ColumnSpacing="15">
+                        <Image Grid.Column="0" 
+                               Source="{Binding ThumbnailUrl}" 
+                               WidthRequest="80" 
+                               HeightRequest="80"
+                               Aspect="AspectFill"
+                               CornerRadius="8"/>
+                        <StackLayout Grid.Column="1" 
+                                   VerticalOptions="Center">
+                            <Label Text="{Binding Title}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   TextColor="Black"/>
+                            <Label Text="{Binding Category}" 
+                                   FontSize="14" 
+                                   TextColor="Gray"
+                                   IsVisible="{Binding Category, Converter={x:Static converters:StringToVisibilityConverter.Instance}}"/>
+                        </StackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- No Results Message -->
+        <Label Grid.Row="1" 
+               Text="Ei hakutuloksia" 
+               HorizontalOptions="Center" 
+               VerticalOptions="Center"
+               FontSize="16"
+               TextColor="Gray"
+               IsVisible="{Binding NoResults}"/>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.Row="1" 
+                          IsRunning="{Binding IsLoading}" 
+                          IsVisible="{Binding IsLoading}"
+                          HorizontalOptions="Center" 
+                          VerticalOptions="Center"/>
+    </Grid>
+</ContentPage>
