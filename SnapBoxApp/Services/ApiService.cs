@@ -1,5 +1,3 @@
-
-
 using System;
 using System.IO;
 using System.Net.Http;
@@ -13,6 +11,23 @@ namespace SnapBoxApp.Services;
 
 public class ApiService
 {
+    public async Task<byte[]?> GetImageBytes(string blobId, bool thumbnail = false)
+    {
+        try
+        {
+            var url = $"{_apiUrl}/Data/Image/{Uri.EscapeDataString(blobId)}" + (thumbnail ? "?thumb=true" : "");
+            var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+        }
+        catch (Exception)
+        {
+            // Handle exceptions as needed
+        }
+        return null;
+    }
     private readonly string _apiUrl;
     private readonly string _username;
     private readonly string _password;
@@ -71,9 +86,23 @@ public class ApiService
         }
     }
 
-    public string GetImageUrl(string blobId, bool thumbnail = false)
+    public async Task<ImageSource?> GetImage(string blobId, bool thumbnail = false)
     {
-        var thumbParam = thumbnail ? "?thumb=true" : "";
-        return $"{_apiUrl}/Data/Image/{Uri.EscapeDataString(blobId)}{thumbParam}";
+        try
+        {
+            var url = $"{_apiUrl}/Data/Image/{Uri.EscapeDataString(blobId)}" + (thumbnail ? "?thumb=true" : "");
+            var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                var imageStream = await response.Content.ReadAsStreamAsync();
+                imageStream.Position = 0;
+                return ImageSource.FromStream(() => imageStream);
+            }
+        }
+        catch (Exception)
+        {
+            // Handle exceptions as needed
+        }
+        return null;
     }
 }

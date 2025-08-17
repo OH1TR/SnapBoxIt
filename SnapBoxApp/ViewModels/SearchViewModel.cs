@@ -77,11 +77,12 @@ public class SearchViewModel : INotifyPropertyChanged
             {
                 foreach (var item in results)
                 {
+                    var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
                     var searchResult = new SearchResultItem
                     {
                         Title = item.Title ?? "Ei otsikkoa",
                         Category = item.Category,
-                        ThumbnailUrl = _apiService.GetImageUrl(item.BlobId, true)
+                        ImageBytes = imageBytes
                     };
                     SearchResults.Add(searchResult);
                 }
@@ -92,7 +93,7 @@ public class SearchViewModel : INotifyPropertyChanged
                 NoResults = true;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle error - could show alert to user
             NoResults = true;
@@ -123,5 +124,5 @@ public class SearchResultItem
 {
     public string Title { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
-    public string ThumbnailUrl { get; set; } = string.Empty;
+    public byte[]? ImageBytes { get; set; }
 }

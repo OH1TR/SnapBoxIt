@@ -20,7 +20,6 @@
                     CommandParameter="{Binding SearchQuery}"
                     BackgroundColor="#007AFF"
                     TextColor="White"
-                    CornerRadius="8"
                     Padding="20,10"/>
         </Grid>
 
@@ -31,12 +30,12 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="10" ColumnDefinitions="Auto,*" ColumnSpacing="15">
-                        <Image Grid.Column="0" 
-                               Source="{Binding ThumbnailUrl}" 
-                               WidthRequest="80" 
-                               HeightRequest="80"
-                               Aspect="AspectFill"
-                               CornerRadius="8"/>
+               <Image Grid.Column="0" 
+                   Source="{Binding ImageBytes, Converter={converters:ByteArrayToImageSourceConverter}}" 
+                   WidthRequest="80" 
+                   HeightRequest="80"
+                   Aspect="AspectFill"
+                   />
                         <StackLayout Grid.Column="1" 
                                    VerticalOptions="Center">
                             <Label Text="{Binding Title}" 
