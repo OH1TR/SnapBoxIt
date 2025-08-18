@@ -63,5 +63,23 @@ namespace SnapBoxApi.Controllers
                 return StatusCode(500, $"Error retrieving image: {ex.Message}");
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteItem(string id)
+        {
+            try
+            {
+                var result = await _dataService.DeleteItem(id);
+                if (result)
+                {
+                    return Ok("Item deleted successfully.");
+                }
+                return NotFound("Item not found.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

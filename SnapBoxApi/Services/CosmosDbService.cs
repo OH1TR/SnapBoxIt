@@ -8,6 +8,7 @@ namespace SnapBoxApi.Services
 {
     public class CosmosDbService
     {
+        const string MyPartitionKey = "item";
         private readonly Microsoft.Azure.Cosmos.Container _container;
 
         public CosmosDbService(IConfiguration configuration)
@@ -106,8 +107,8 @@ namespace SnapBoxApi.Services
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(data.PartitionKey))
-                    data.PartitionKey = data.Category ?? "item";
+
+                    data.PartitionKey = MyPartitionKey;
 
                 await _container.CreateItemAsync(data, new PartitionKey(data.PartitionKey));
             }
@@ -117,21 +118,6 @@ namespace SnapBoxApi.Services
             }
         }
 
-        /// <summary>
-        /// Retrieves an image entry by BlobId.
-        /// </summary>
-        public async Task<ItemDto?> GetImageEntryAsync(string Id)
-        {
-            try
-            {
-                var response = await _container.ReadItemAsync<ItemDto>(Id, new PartitionKey(Id));
-                return response.Resource;
-            }
-            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// Sample method for querying entries.
@@ -179,5 +165,31 @@ namespace SnapBoxApi.Services
 
             return results;
         }
+
+        public async Task DeleteItemAsync(string itemId)
+        {
+            try
+            {
+                await _container.DeleteItemAsync<ItemDto>(itemId, new PartitionKey(MyPartitionKey));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new InvalidOperationException($"Item with ID {itemId} not found.");
+            }
+        }
+
+        public async Task<ItemDto?> GetItemAsync(string id)
+        {
+            try
+            {
+                var response = await _container.ReadItemAsync<ItemDto>(id, new PartitionKey(MyPartitionKey));
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+   
     }
 }
