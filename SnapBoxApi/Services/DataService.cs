@@ -62,7 +62,7 @@ namespace SnapBoxApi.Services
                 if (string.IsNullOrWhiteSpace(id))
                     continue;
 
-                var blobClient = containerClient.GetBlobClient(item.BlobId);
+                var blobClient = containerClient.GetBlobClient(id);
                 await blobClient.DeleteIfExistsAsync();
             }
 

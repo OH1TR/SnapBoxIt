@@ -9,7 +9,7 @@
             Text="Laatikko"/>
 
         <Entry x:Name="BoxName"/>
-        
+
         <toolkit:CameraView x:Name="camera"
                             HeightRequest="300"
                             WidthRequest="300"/>
@@ -21,20 +21,27 @@
 
         <!-- Title -->
         <Label Text="Title"/>
-        <Entry x:Name="TitleEntry" IsReadOnly="True" Text="{Binding Title}"/>
+        <Entry x:Name="TitleEntry"
+                IsReadOnly="True"
+                Text="{Binding Title}"/>
 
         <!-- Category -->
         <Label Text="Category"/>
-        <Entry x:Name="CategoryEntry" IsReadOnly="True" Text="{Binding Category}"/>
+        <Entry x:Name="CategoryEntry"
+                IsReadOnly="True"
+                Text="{Binding Category}"/>
 
         <!-- Detailed Description -->
         <Label Text="Detailed Description"/>
-        <Editor x:Name="DetailedDescriptionEditor" IsReadOnly="True" Text="{Binding DetailedDescription}" AutoSize="TextChanges" HeightRequest="80"/>
+        <Editor x:Name="DetailedDescriptionEditor"
+                IsReadOnly="True"
+                Text="{Binding DetailedDescription}"
+                AutoSize="TextChanges"
+                HeightRequest="80"/>
 
-        <!-- Accept/Reject buttons side by side -->
-        <HorizontalStackLayout>
-            <Button x:Name="AcceptBtn" Text="Hyväksy"/>
-            <Button x:Name="RejectBtn" Text="Hylkää"/>
-        </HorizontalStackLayout>
+        <Button x:Name="RejectBtn"
+            Clicked="OnRejectClicked"
+                Text="Hylkää"/>
+
     </VerticalStackLayout>
 </ContentPage>

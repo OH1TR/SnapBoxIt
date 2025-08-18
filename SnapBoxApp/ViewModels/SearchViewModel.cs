@@ -82,7 +82,8 @@ public class SearchViewModel : INotifyPropertyChanged
                     {
                         Title = item.Title ?? "Ei otsikkoa",
                         Category = item.Category,
-                        ImageBytes = imageBytes
+                        ImageBytes = imageBytes,
+                        BoxId = item.BoxId
                     };
                     SearchResults.Add(searchResult);
                 }
@@ -125,4 +126,5 @@ public class SearchResultItem
     public string Title { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public byte[]? ImageBytes { get; set; }
+    public string BoxId { get; set; } = string.Empty;
 }

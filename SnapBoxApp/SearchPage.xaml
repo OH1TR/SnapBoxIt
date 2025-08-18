@@ -48,8 +48,7 @@
                                    IsVisible="{Binding Category, Converter={x:Static converters:StringToVisibilityConverter.Instance}}"/>
                             <Label Text="{Binding BoxId}" 
                                    FontSize="14" 
-                                   TextColor="Gray"
-                                   IsVisible="{Binding Category, Converter={x:Static converters:StringToVisibilityConverter.Instance}}"/>
+                                   TextColor="Gray"/>
 
                         </StackLayout>
                     </Grid>

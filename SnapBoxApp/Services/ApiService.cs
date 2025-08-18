@@ -11,6 +11,22 @@ namespace SnapBoxApp.Services;
 
 public class ApiService
 {
+    public async Task<bool> DeleteItem(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return false;
+
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"{_apiUrl}/Data/{Uri.EscapeDataString(itemId)}").ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            // Handle exceptions as needed
+            return false;
+        }
+    }
     public async Task<byte[]?> GetImageBytes(string blobId, bool thumbnail = false)
     {
         try
@@ -45,7 +61,7 @@ public class ApiService
             new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
     }
 
-    public async Task<HttpResponseMessage> Upload(MemoryStream imageStream,string boxId)
+    public async Task<HttpResponseMessage> Upload(MemoryStream imageStream, string boxId)
     {
         imageStream.Position = 0;
         using var form = new MultipartFormDataContent();
@@ -55,7 +71,7 @@ public class ApiService
 
 
         content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        var response = await _httpClient.PutAsync(_apiUrl + "/Image/upload/"+Uri.EscapeDataString(boxId), form).ConfigureAwait(false);
+        var response = await _httpClient.PutAsync(_apiUrl + "/Image/upload/" + Uri.EscapeDataString(boxId), form).ConfigureAwait(false);
         return response;
     }
 
@@ -65,9 +81,9 @@ public class ApiService
         {
             var json = JsonSerializer.Serialize(request);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             var response = await _httpClient.PostAsync(_apiUrl + "/Data/FindItems", content).ConfigureAwait(false);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -77,7 +93,7 @@ public class ApiService
                 });
                 return items ?? new List<ItemSimpleDto>();
             }
-            
+
             return new List<ItemSimpleDto>();
         }
         catch (Exception)
@@ -105,4 +121,5 @@ public class ApiService
         }
         return null;
     }
+    
 }
