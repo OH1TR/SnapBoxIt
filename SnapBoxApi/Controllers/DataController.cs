@@ -25,8 +25,8 @@ namespace SnapBoxApi.Controllers
         {
             try
             {
-                if(request.Count>10)
-                request.Count=10;
+                if (request.Count > 10)
+                    request.Count = 10;
                 var items = await _dataService.FindItems(request.Query, request.Count);
                 return Ok(items);
             }
@@ -43,7 +43,10 @@ namespace SnapBoxApi.Controllers
             try
             {
                 var containerClient = _blobServiceClient.GetBlobContainerClient("images");
-                var blobClient = containerClient.GetBlobClient(blobId);
+
+                string blobName = thumb ? $"{blobId}_thumb{Tools.ThumbPercent}" : blobId;
+
+                var blobClient = containerClient.GetBlobClient(blobName);
 
                 if (!await blobClient.ExistsAsync())
                 {
@@ -52,22 +55,6 @@ namespace SnapBoxApi.Controllers
 
                 var response = await blobClient.DownloadAsync();
                 var imageStream = response.Value.Content;
-
-                if (thumb)
-                {
-                    // Create thumbnail with 80% smaller resolution
-                    using var image = await Image.LoadAsync(imageStream);
-                    var newWidth = (int)(image.Width * 0.2); // 20% of original = 80% smaller
-                    var newHeight = (int)(image.Height * 0.2);
-
-                    image.Mutate(x => x.Resize(newWidth, newHeight));
-
-                    var thumbnailStream = new MemoryStream();
-                    await image.SaveAsync(thumbnailStream, image.Metadata.DecodedImageFormat);
-                    thumbnailStream.Position = 0;
-
-                    return File(thumbnailStream, response.Value.ContentType);
-                }
 
                 return File(imageStream, response.Value.ContentType);
             }

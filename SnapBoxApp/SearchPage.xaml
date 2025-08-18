@@ -32,8 +32,8 @@
                     <Grid Padding="10" ColumnDefinitions="Auto,*" ColumnSpacing="15">
                <Image Grid.Column="0" 
                    Source="{Binding ImageBytes, Converter={converters:ByteArrayToImageSourceConverter}}" 
-                   WidthRequest="80" 
-                   HeightRequest="80"
+                   WidthRequest="200" 
+                   HeightRequest="200"
                    Aspect="AspectFill"
                    />
                         <StackLayout Grid.Column="1" 
