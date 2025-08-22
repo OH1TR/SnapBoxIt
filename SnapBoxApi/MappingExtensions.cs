@@ -15,7 +15,9 @@ public static class MappingExtensions
             DetailedDescription = item.DetailedDescription,
             Colors = item.Colors,
             CreatedAt = item.CreatedAt,
-            UpdatedAt = item.UpdatedAt
+            UpdatedAt = item.UpdatedAt,
+            Count = item.Count,
+            UserDescription = item.UserDescription
         };
     }
 }

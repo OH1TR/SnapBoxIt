@@ -38,7 +38,6 @@ public partial class UploadPage : ContentPage
 					var json = await response.Content.ReadAsStringAsync();
 					var item = System.Text.Json.JsonSerializer.Deserialize<Model.ItemSimpleDto>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 					BindingContext = item;
-					await DisplayAlert("Success", $"Photo uploaded successfully! Item ID: {item?.id}", "OK");
 				}
 				else
 				{
