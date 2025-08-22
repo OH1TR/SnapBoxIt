@@ -1,5 +1,8 @@
-public class SearchRequest
+namespace SnapBoxApi.Model
 {
-    public string Query { get; set; } = string.Empty;
-    public int Count { get; set; } = 5;
+    public class SearchRequest
+    {
+        public string Query { get; set; } = string.Empty;
+        public int Count { get; set; } = 5;
+    }
 }

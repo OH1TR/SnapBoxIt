@@ -39,6 +39,29 @@
                 AutoSize="TextChanges"
                 HeightRequest="80"/>
 
+        <!-- Count -->
+        <Label Text="Count"/>
+        <Entry x:Name="CountEntry"
+               Text="{Binding Count}"
+               Keyboard="Numeric"
+               Placeholder="Enter count"/>
+
+        <!-- User Description -->
+        <Label Text="User Description"/>
+        <Editor x:Name="UserDescriptionEditor"
+                Text="{Binding UserDescription}"
+                AutoSize="TextChanges"
+                HeightRequest="80"
+                Placeholder="Enter your description"/>
+
+        <Button x:Name="SaveBtn"
+                Text="Tallenna"
+                Clicked="OnSaveClicked"
+                HorizontalOptions="Fill"
+                BackgroundColor="Green"
+                TextColor="White"
+                Margin="0,10,0,0"/>
+
         <Button x:Name="RejectBtn"
             Clicked="OnRejectClicked"
                 Text="Hylkää"/>

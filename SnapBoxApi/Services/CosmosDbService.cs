@@ -190,6 +190,42 @@ namespace SnapBoxApi.Services
                 return null;
             }
         }
-   
+
+        public async Task<ItemDto> UpdateItemAsync(string id, ItemSimpleDto itemDto)
+        {
+            try
+            {
+                // First, get the existing item
+                var existingItem = await GetItemAsync(id);
+                if (existingItem == null)
+                {
+                    throw new InvalidOperationException($"Item with ID {id} not found.");
+                }
+
+                // Update only the specified fields
+                if (itemDto.UserDescription != null)
+                {
+                    existingItem.UserDescription = itemDto.UserDescription;
+                }
+
+                existingItem.Count = itemDto.Count;
+
+                // Update the UpdatedAt timestamp
+                existingItem.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Replace the item in Cosmos DB
+                var response = await _container.ReplaceItemAsync(existingItem, id, new Microsoft.Azure.Cosmos.PartitionKey(MyPartitionKey));
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new InvalidOperationException($"Item with ID {id} not found.");
+            }
+            catch (CosmosException ex)
+            {
+                throw new InvalidOperationException($"Failed to update item: {ex.Message}");
+            }
+        }
+
     }
 }

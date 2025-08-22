@@ -102,6 +102,26 @@ public class ApiService
         }
     }
 
+    public async Task<bool> SaveItem(ItemSimpleDto item)
+    {
+        if (item == null || string.IsNullOrWhiteSpace(item.id))
+            return false;
+
+        try
+        {
+            var json = JsonSerializer.Serialize(item);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"{_apiUrl}/Data/Save/{Uri.EscapeDataString(item.id)}", content).ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            // Handle exceptions as needed
+            return false;
+        }
+    }
+
     public async Task<ImageSource?> GetImage(string blobId, bool thumbnail = false)
     {
         try

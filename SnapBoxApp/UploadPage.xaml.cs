@@ -89,4 +89,39 @@ public partial class UploadPage : ContentPage
 			await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
 		}
 	}
+
+	private async void OnSaveClicked(object? sender, EventArgs e)
+	{
+		try
+		{
+			if (BindingContext is Model.ItemSimpleDto item)
+			{
+				// Update the item with values from the UI
+				if (float.TryParse(CountEntry.Text, out float count))
+				{
+					item.Count = count;
+				}
+				item.UserDescription = UserDescriptionEditor.Text;
+
+				// Call the API service to save the item
+				bool saved = await _apiService.SaveItem(item);
+				if (saved)
+				{
+					await DisplayAlert("Success", "Item saved successfully.", "OK");
+				}
+				else
+				{
+					await DisplayAlert("Error", "Failed to save the item. Please try again.", "OK");
+				}
+			}
+			else
+			{
+				await DisplayAlert("Error", "No item to save.", "OK");
+			}
+		}
+		catch (Exception ex)
+		{
+			await DisplayAlert("Error", $"An error occurred while saving: {ex.Message}", "OK");
+		}
+	}
 }

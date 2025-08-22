@@ -13,11 +13,13 @@ namespace SnapBoxApi.Controllers
     {
         private readonly DataService _dataService;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly CosmosDbService _cosmosDbService;
 
-        public DataController(DataService dataService, BlobServiceClient blobServiceClient)
+        public DataController(DataService dataService, BlobServiceClient blobServiceClient, CosmosDbService cosmosDbService)
         {
             _dataService = dataService;
             _blobServiceClient = blobServiceClient;
+            _cosmosDbService = cosmosDbService;
         }
 
         [HttpPost("FindItems")]
@@ -81,5 +83,35 @@ namespace SnapBoxApi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpPut("Save/{id}")]
+        public async Task<ActionResult<ItemDto>> SaveItem(string id, [FromBody] ItemSimpleDto itemDto)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("Item ID is required.");
+                }
+
+                if (itemDto == null)
+                {
+                    return BadRequest("Item data is required.");
+                }
+
+                var updatedItem = await _cosmosDbService.UpdateItemAsync(id, itemDto);
+                return Ok(updatedItem);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+    
     }
 }

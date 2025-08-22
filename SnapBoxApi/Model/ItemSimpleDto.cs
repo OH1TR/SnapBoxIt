@@ -14,4 +14,5 @@ namespace SnapBoxApi.Model
         public DateTimeOffset? UpdatedAt { get; set; }
         public float Count { get; set; }
         public string? UserDescription { get; set; }  
+    }
 }
