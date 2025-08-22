@@ -43,19 +43,20 @@ namespace SnapBoxApi.Controllers
             using var originalStream = new MemoryStream();
             await file.CopyToAsync(originalStream);
 
-            var upTask= UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
+            var upTask = UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
 
             // Kuvan analyysi
             originalStream.Position = 0;
             var description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream);
             description.BlobId = blobId;
             description.BoxId = boxId;
-            var dbTask= _cosmosService.AddItemAsync(description);
+            description.Count = 1;
+            var dbTask = _cosmosService.AddItemAsync(description);
             Task.WaitAll(upTask, dbTask);
 
             return Ok(description.ToSimpleDto());
         }
-        private async Task UploadImageToBlobAsync(MemoryStream originalStream, string blobId,string contentType)
+        private async Task UploadImageToBlobAsync(MemoryStream originalStream, string blobId, string contentType)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient("images");
 

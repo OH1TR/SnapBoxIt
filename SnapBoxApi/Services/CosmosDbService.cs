@@ -191,7 +191,7 @@ namespace SnapBoxApi.Services
             }
         }
 
-        public async Task<ItemDto> UpdateItemAsync(string id, ItemSimpleDto itemDto)
+        public async Task<ItemDto> UpdateItemAsync(string id, ItemSimpleDto itemDto,float[] userDescriptionEmbedding)
         {
             try
             {
@@ -205,6 +205,7 @@ namespace SnapBoxApi.Services
                 // Update only the specified fields
                 if (itemDto.UserDescription != null)
                 {
+                    existingItem.UserDescriptionEmbedding = userDescriptionEmbedding;
                     existingItem.UserDescription = itemDto.UserDescription;
                 }
 

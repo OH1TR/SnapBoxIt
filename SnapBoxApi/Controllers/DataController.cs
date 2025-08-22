@@ -14,12 +14,14 @@ namespace SnapBoxApi.Controllers
         private readonly DataService _dataService;
         private readonly BlobServiceClient _blobServiceClient;
         private readonly CosmosDbService _cosmosDbService;
+        private readonly ImageDescriptionService _imageDescriptionService;
 
-        public DataController(DataService dataService, BlobServiceClient blobServiceClient, CosmosDbService cosmosDbService)
+        public DataController(DataService dataService, BlobServiceClient blobServiceClient, CosmosDbService cosmosDbService, ImageDescriptionService imageDescriptionService)
         {
             _dataService = dataService;
             _blobServiceClient = blobServiceClient;
             _cosmosDbService = cosmosDbService;
+            _imageDescriptionService = imageDescriptionService;
         }
 
         [HttpPost("FindItems")]
@@ -99,7 +101,13 @@ namespace SnapBoxApi.Controllers
                     return BadRequest("Item data is required.");
                 }
 
-                var updatedItem = await _cosmosDbService.UpdateItemAsync(id, itemDto);
+                float[] userDescriptionEmbedding = null;
+
+                if (itemDto.UserDescription != null)
+                {
+                    userDescriptionEmbedding = await _imageDescriptionService.GetEmbeddingAsync(itemDto.UserDescription);
+                }
+                var updatedItem = await _cosmosDbService.UpdateItemAsync(id, itemDto,userDescriptionEmbedding);
                 return Ok(updatedItem);
             }
             catch (InvalidOperationException ex)
@@ -112,6 +120,6 @@ namespace SnapBoxApi.Controllers
             }
         }
 
-    
+
     }
 }

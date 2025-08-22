@@ -105,11 +105,7 @@ public partial class UploadPage : ContentPage
 
 				// Call the API service to save the item
 				bool saved = await _apiService.SaveItem(item);
-				if (saved)
-				{
-					await DisplayAlert("Success", "Item saved successfully.", "OK");
-				}
-				else
+				if (!saved)
 				{
 					await DisplayAlert("Error", "Failed to save the item. Please try again.", "OK");
 				}

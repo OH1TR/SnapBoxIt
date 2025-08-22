@@ -5,31 +5,33 @@
              x:Class="SnapBoxApp.UploadPage"
              Title="UploadPage">
     <VerticalStackLayout>
-        <Label
-            Text="Laatikko"/>
+        <HorizontalStackLayout>
+            <VerticalStackLayout>
+                <Label
+                    Text="Laatikko"/>
 
-        <Entry x:Name="BoxName"/>
-
-        <toolkit:CameraView x:Name="camera"
-                            HeightRequest="300"
-                            WidthRequest="300"/>
-        <Button
-            x:Name="CaptureBtn"
-            Text="Take photo"
-            Clicked="OnCaptureClicked"
-            HorizontalOptions="Fill"/>
-
+                <Entry x:Name="BoxName" WidthRequest="150"/>
+                <Button
+                    x:Name="CaptureBtn"
+                    Text="Take photo"
+                    Clicked="OnCaptureClicked"
+                    HorizontalOptions="Fill"/>
+            </VerticalStackLayout>
+            <toolkit:CameraView x:Name="camera"
+                                HeightRequest="300"
+                                WidthRequest="300"/>
+        </HorizontalStackLayout>
         <!-- Title -->
         <Label Text="Title"/>
         <Entry x:Name="TitleEntry"
-                IsReadOnly="True"
-                Text="{Binding Title}"/>
+               IsReadOnly="True"
+               Text="{Binding Title}"/>
 
         <!-- Category -->
         <Label Text="Category"/>
         <Entry x:Name="CategoryEntry"
-                IsReadOnly="True"
-                Text="{Binding Category}"/>
+               IsReadOnly="True"
+               Text="{Binding Category}"/>
 
         <!-- Detailed Description -->
         <Label Text="Detailed Description"/>
@@ -37,7 +39,7 @@
                 IsReadOnly="True"
                 Text="{Binding DetailedDescription}"
                 AutoSize="TextChanges"
-                HeightRequest="80"/>
+                HeightRequest="30"/>
 
         <!-- Count -->
         <Label Text="Count"/>
@@ -51,20 +53,17 @@
         <Editor x:Name="UserDescriptionEditor"
                 Text="{Binding UserDescription}"
                 AutoSize="TextChanges"
-                HeightRequest="80"
+                HeightRequest="40"
                 Placeholder="Enter your description"/>
 
-        <Button x:Name="SaveBtn"
-                Text="Tallenna"
-                Clicked="OnSaveClicked"
-                HorizontalOptions="Fill"
-                BackgroundColor="Green"
-                TextColor="White"
-                Margin="0,10,0,0"/>
+        <HorizontalStackLayout>
+            <Button x:Name="SaveBtn"
+                    Text="Tallenna"
+                    Clicked="OnSaveClicked"/>
 
-        <Button x:Name="RejectBtn"
-            Clicked="OnRejectClicked"
-                Text="Hylkää"/>
-
+            <Button x:Name="RejectBtn"
+                    Clicked="OnRejectClicked"
+                    Text="Hylkää"/>
+        </HorizontalStackLayout>
     </VerticalStackLayout>
 </ContentPage>
