@@ -34,5 +34,11 @@
 
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        public float Count { get; set; } = default!;
+
+        public string? UserDescription { get; set; } = default!;
+
+        public float[] UserDescriptionEmbedding { get; set; } = Array.Empty<float>();
+
     }
 }

@@ -12,5 +12,6 @@ namespace SnapBoxApi.Model
         public List<string> Colors { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
-    }
+        public float Count { get; set; }
+        public string? UserDescription { get; set; }  
 }
