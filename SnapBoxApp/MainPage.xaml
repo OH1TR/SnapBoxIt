@@ -40,6 +40,11 @@
                 Text="Haku" 
                 Clicked="OnSearchClicked"
                 HorizontalOptions="Fill" />
+             <Button
+                x:Name="PrintBtn"
+                Text="Tulosteet" 
+                Clicked="OnPrintClicked"
+                HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
 

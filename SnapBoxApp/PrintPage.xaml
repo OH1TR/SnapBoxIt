@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SnapBoxApp.PrintPage"
+             Title="Tulosteet">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,20"
+            Spacing="25">
+            
+            <Label
+                Text="Tulosteen tyyppi"
+                Style="{StaticResource SubHeadline}"
+                SemanticProperties.HeadingLevel="Level2" />
+
+            <RadioButton
+                x:Name="QrLabelRadio"
+                Content="QR-label"
+                IsChecked="True"
+                GroupName="PrintType" />
+
+            <RadioButton
+                x:Name="TextLabelRadio"
+                Content="Tekstilabel"
+                GroupName="PrintType" />
+
+            <Label
+                Text="Tulostettava teksti"
+                Style="{StaticResource SubHeadline}"
+                SemanticProperties.HeadingLevel="Level2" />
+
+            <Editor
+                x:Name="PrintTextEditor"
+                Placeholder="Syötä tulostettava teksti..."
+                AutoSize="TextChanges"
+                MinimumHeightRequest="100"
+                Text=""
+                HorizontalOptions="Fill" />
+
+            <Button
+                x:Name="PrintButton"
+                Text="Tulosta"
+                Clicked="OnPrintClicked"
+                HorizontalOptions="Fill"
+                BackgroundColor="#007ACC"
+                TextColor="White" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

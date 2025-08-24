@@ -1,9 +1,11 @@
 using Azure.Storage.Blobs;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SnapBoxApi.Model;
 using SnapBoxApi.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace SnapBoxApi.Controllers
 {
@@ -15,13 +17,15 @@ namespace SnapBoxApi.Controllers
         private readonly BlobServiceClient _blobServiceClient;
         private readonly CosmosDbService _cosmosDbService;
         private readonly ImageDescriptionService _imageDescriptionService;
+        private readonly IConfiguration _configuration;
 
-        public DataController(DataService dataService, BlobServiceClient blobServiceClient, CosmosDbService cosmosDbService, ImageDescriptionService imageDescriptionService)
+        public DataController(DataService dataService, BlobServiceClient blobServiceClient, CosmosDbService cosmosDbService, ImageDescriptionService imageDescriptionService, IConfiguration configuration)
         {
             _dataService = dataService;
             _blobServiceClient = blobServiceClient;
             _cosmosDbService = cosmosDbService;
             _imageDescriptionService = imageDescriptionService;
+            _configuration = configuration;
         }
 
         [HttpPost("FindItems")]
@@ -117,6 +121,42 @@ namespace SnapBoxApi.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("PrintLabel")]
+        public async Task<IActionResult> PrintLabel([FromBody] PrintLabelRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.Type) || string.IsNullOrEmpty(request.Text))
+                {
+                    return BadRequest("Type and Text are required.");
+                }
+
+                var connectionString = _configuration["ServiceBus:ConnectionString"];
+                var queueName = _configuration["ServiceBus:QueueName"] ?? "PrintJob";
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    return StatusCode(500, "Service Bus connection string not configured.");
+                }
+
+                // Create message in the format expected by LabelPrintingAgent: "type|text"
+                var messageBody = $"{request.Type}|{request.Text}";
+
+                // Send message to Azure Service Bus
+                await using var client = new ServiceBusClient(connectionString);
+                await using var sender = client.CreateSender(queueName);
+                
+                var message = new ServiceBusMessage(messageBody);
+                await sender.SendMessageAsync(message);
+
+                return Ok(new { message = "Print job sent successfully", type = request.Type, text = request.Text });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending print job: {ex.Message}");
             }
         }
 

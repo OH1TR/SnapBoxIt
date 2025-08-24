@@ -141,5 +141,23 @@ public class ApiService
         }
         return null;
     }
+
+    public async Task<bool> PrintLabel(string type, string text)
+    {
+        try
+        {
+            var request = new { Type = type, Text = text };
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{_apiUrl}/Data/PrintLabel", content).ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            // Handle exceptions as needed
+            return false;
+        }
+    }
     
 }

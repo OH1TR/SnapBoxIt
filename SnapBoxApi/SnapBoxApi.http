@@ -4,3 +4,23 @@ GET {{SnapBoxApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Print Label API
+POST {{SnapBoxApi_HostAddress}}/api/Data/PrintLabel
+Content-Type: application/json
+
+{
+  "type": "qrlabel",
+  "text": "Test QR Code Content"
+}
+
+###
+
+# Print Text Label
+POST {{SnapBoxApi_HostAddress}}/api/Data/PrintLabel
+Content-Type: application/json
+
+{
+  "type": "label",
+  "text": "Test Text Label"
+}

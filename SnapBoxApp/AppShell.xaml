@@ -16,4 +16,9 @@
         ContentTemplate="{DataTemplate local:SearchPage}"
         Route="SearchPage" />
 
+    <ShellContent
+        Title="Tulosteet"
+        ContentTemplate="{DataTemplate local:PrintPage}"
+        Route="PrintPage" />
+
 </Shell>

@@ -39,6 +39,10 @@ namespace TestClient
                 // Test GetImageAsync with thumbnail
                 Console.WriteLine("\n--- Testing GetImageAsync with Thumbnail ---");
                 //await GetImageAsync(baseUrl, blobId, true);
+                
+                // Test PrintLabel
+                Console.WriteLine("\n--- Testing PrintLabel ---");
+                await TestPrintLabelAsync(baseUrl, "qrlabel", "Test QR Code");
             }
             catch (Exception ex)
             {
@@ -211,6 +215,51 @@ namespace TestClient
             {
                 string errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Failed to retrieve image with status: {response.StatusCode}");
+                Console.WriteLine($"Error: {errorContent}");
+            }
+        }
+
+        static async Task TestPrintLabelAsync(string baseUrl, string type, string text)
+        {
+            // Add Basic Authentication header from configuration
+            string? username = configuration?["BasicAuth:Username"];
+            string? password = configuration?["BasicAuth:Password"];
+            
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Error: Username or password not found in configuration.");
+                return;
+            }
+            
+            string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
+            
+            // Create the print label request JSON
+            var printRequest = new
+            {
+                Type = type,
+                Text = text
+            };
+            
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(printRequest);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            
+            string url = $"{baseUrl}/api/Data/PrintLabel";
+            Console.WriteLine($"Testing PrintLabel at: {url}");
+            Console.WriteLine($"Type: '{type}', Text: '{text}'");
+            
+            var response = await httpClient.PostAsync(url, content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("PrintLabel test successful!");
+                Console.WriteLine($"Response: {responseContent}");
+            }
+            else
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"PrintLabel test failed with status: {response.StatusCode}");
                 Console.WriteLine($"Error: {errorContent}");
             }
         }
