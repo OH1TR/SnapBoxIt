@@ -10,3 +10,6 @@
 .DS_Store
 *.user
 /.vs
+/.vscode
+/LabelPrintingAgent/bin
+/LabelPrintingAgent/obj
