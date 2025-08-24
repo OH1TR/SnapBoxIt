@@ -210,7 +210,7 @@ namespace LabelPrintingAgent
                 for (int i = 0; i < PrinterSettings.InstalledPrinters.Count; i++)
                 {
                     Console.WriteLine($"Löydetty tulostin: {PrinterSettings.InstalledPrinters[i]}");
-                    if (PrinterSettings.InstalledPrinters[i].ToLower().Contains("brother"))
+                    if (PrinterSettings.InstalledPrinters[i].ToLower().Contains("ql-700"))
                     {
                         printDocument.PrinterSettings.PrinterName = PrinterSettings.InstalledPrinters[i];
                         break;
@@ -242,15 +242,31 @@ namespace LabelPrintingAgent
         static void PrintTextLabelPage(object sender, PrintPageEventArgs e, string text)
         {
             var graphics = e.Graphics;
-            var font = new Font("Arial", 36, FontStyle.Bold);
+            var font = new Font("Arial", 18);
             var brush = new SolidBrush(Color.Black);
             
-            // Tulosta vain teksti, isommalla fontilla ja keskitettynä
-            var textSize = graphics.MeasureString(text, font);
-            var x = (e.PageBounds.Width - textSize.Width) / 2;
-            var y = (e.PageBounds.Height - textSize.Height) / 2;
+            // Jaa teksti rivinvaihdoilla
+            var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             
-            graphics.DrawString(text, font, brush, x, y);
+            // Sivun korkeus 29mm (muunna pikseleiksi, oletetaan 96 DPI)
+            var pageHeightMm = 29.0;
+            var pageHeightPixels = (int)(pageHeightMm * 96.0 / 25.4); // 25.4mm = 1 tuuma
+            
+            // Laske tekstin kokonaiskorkeus
+            var totalTextHeight = lines.Sum(line => graphics.MeasureString(line, font).Height);
+            
+            // Aloita y-koordinaatti keskeltä
+            var startY = (pageHeightPixels - totalTextHeight) / 2;
+            var currentY = startY;
+            
+            // Tulosta jokainen rivi erikseen
+            foreach (var line in lines)
+            {
+                var lineSize = graphics.MeasureString(line, font);
+                var x = 1; // Vasen marginaali
+                graphics.DrawString(line, font, brush, x, currentY);
+                currentY += (int)lineSize.Height;
+            }
         }
     }
 }
