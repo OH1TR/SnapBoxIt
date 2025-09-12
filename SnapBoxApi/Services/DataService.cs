@@ -24,22 +24,7 @@ namespace SnapBoxApi.Services
 
             // Find top matches using vector search with specified count
             var items = await _cosmosDbService.QueryTopByFullTextEmbeddingAsync(searchVector, count);
-
-            // Convert to ItemSimpleDto
-            var result = items.Select(item => new ItemSimpleDto
-            {
-                id = item.id,
-                Type = item.Type,
-                BlobId = item.BlobId,
-                BoxId = item.BoxId,
-                Title = item.Title,
-                Category = item.Category,
-                DetailedDescription = item.DetailedDescription,
-                Colors = item.Colors,
-                CreatedAt = item.CreatedAt,
-                UpdatedAt = item.UpdatedAt
-            }).ToList();
-
+            var result = items.Select(item =>  item.ToSimpleDto()).ToList();
             return result;
         }
 
