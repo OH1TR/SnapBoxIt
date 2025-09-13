@@ -26,4 +26,9 @@ public partial class MainPage : ContentPage
 	{
 		await Shell.Current.GoToAsync(nameof(PrintPage));
 	}
+
+	private async void OnBoxViewClicked(object? sender, EventArgs e)
+	{
+		await Shell.Current.GoToAsync(nameof(BoxViewPage));
+	}
 }

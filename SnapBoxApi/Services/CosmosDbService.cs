@@ -228,5 +228,60 @@ namespace SnapBoxApi.Services
             }
         }
 
+        public async Task<List<string>> GetBoxesAsync()
+        {
+            try
+            {
+                var queryText = "SELECT DISTINCT c.BoxId FROM c WHERE c.BoxId != null AND c.BoxId != ''";
+                var queryDefinition = new QueryDefinition(queryText);
+
+                var iterator = _container.GetItemQueryIterator<dynamic>(queryDefinition);
+
+                var results = new List<string>();
+                while (iterator.HasMoreResults)
+                {
+                    var response = await iterator.ReadNextAsync();
+                    foreach (var item in response)
+                    {
+                        if (item.BoxId != null)
+                        {
+                            results.Add(item.BoxId.ToString());
+                        }
+                    }
+                }
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to get boxes: {ex.Message}");
+            }
+        }
+
+        public async Task<List<ItemDto>> GetBoxContentsAsync(string boxId)
+        {
+            try
+            {
+                var queryText = "SELECT * FROM c WHERE c.BoxId = @boxId";
+                var queryDefinition = new QueryDefinition(queryText)
+                    .WithParameter("@boxId", boxId);
+
+                var iterator = _container.GetItemQueryIterator<ItemDto>(queryDefinition);
+
+                var results = new List<ItemDto>();
+                while (iterator.HasMoreResults)
+                {
+                    var response = await iterator.ReadNextAsync();
+                    results.AddRange(response);
+                }
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to get box contents: {ex.Message}");
+            }
+        }
+
     }
 }

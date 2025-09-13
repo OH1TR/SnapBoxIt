@@ -160,6 +160,39 @@ namespace SnapBoxApi.Controllers
             }
         }
 
+        [HttpGet("GetBoxes")]
+        public async Task<ActionResult<List<string>>> GetBoxes()
+        {
+            try
+            {
+                var boxes = await _cosmosDbService.GetBoxesAsync();
+                return Ok(boxes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetBoxContents/{boxId}")]
+        public async Task<ActionResult<List<ItemSimpleDto>>> GetBoxContents(string boxId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(boxId))
+                {
+                    return BadRequest("Box ID is required.");
+                }
+
+                var items = await _cosmosDbService.GetBoxContentsAsync(boxId);
+                return Ok(items.Select(i=>i.ToSimpleDto()));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
 
     }
 }

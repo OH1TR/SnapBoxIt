@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView x:Class="SnapBoxApp.SearchResultsView"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:SnapBoxApp.Converters">
+    <Grid>
+        <!-- Results List -->
+        <CollectionView ItemsSource="{Binding SearchResults, Source={x:RelativeSource AncestorType={x:Type ContentView}}}"
+                        IsVisible="{Binding HasResults, Source={x:RelativeSource AncestorType={x:Type ContentView}}}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10" ColumnDefinitions="Auto,*" ColumnSpacing="15">
+                        <Image Grid.Column="0" 
+                               Source="{Binding ImageBytes, Converter={converters:ByteArrayToImageSourceConverter}}" 
+                               WidthRequest="200" 
+                               HeightRequest="200"
+                               Aspect="AspectFill" />
+                        <StackLayout Grid.Column="1" 
+                                     VerticalOptions="Center">
+                            <Label Text="{Binding Title}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   TextColor="Black"/>                                  
+                            <Label Text="{Binding DetailedDescription}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   TextColor="Black"/>
+                            <Label Text="{Binding Category}" 
+                                   FontSize="14" 
+                                   TextColor="Gray"
+                                   IsVisible="{Binding Category, Converter={x:Static converters:StringToVisibilityConverter.Instance}}"/>
+                            <Label Text="{Binding BoxId}" 
+                                   FontSize="16" 
+                                   TextColor="Black"/>
+                        </StackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- No Results Message -->
+        <Label Text="Ei hakutuloksia" 
+               HorizontalOptions="Center" 
+               VerticalOptions="Center"
+               FontSize="16"
+               TextColor="Gray"
+               IsVisible="{Binding NoResults, Source={x:RelativeSource AncestorType={x:Type ContentView}}}"/>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator IsRunning="{Binding IsLoading, Source={x:RelativeSource AncestorType={x:Type ContentView}}}" 
+                          IsVisible="{Binding IsLoading, Source={x:RelativeSource AncestorType={x:Type ContentView}}}"
+                          HorizontalOptions="Center" 
+                          VerticalOptions="Center"/>
+    </Grid>
+</ContentView>

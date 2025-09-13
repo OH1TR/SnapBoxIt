@@ -159,5 +159,56 @@ public class ApiService
             return false;
         }
     }
+
+    public async Task<List<string>> GetBoxes()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_apiUrl}/Data/GetBoxes").ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var boxes = JsonSerializer.Deserialize<List<string>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return boxes ?? new List<string>();
+            }
+
+            return new List<string>();
+        }
+        catch (Exception)
+        {
+            return new List<string>();
+        }
+    }
+
+    public async Task<List<ItemSimpleDto>> GetBoxContents(string boxId)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(boxId))
+                return new List<ItemSimpleDto>();
+
+            var response = await _httpClient.GetAsync($"{_apiUrl}/Data/GetBoxContents/{Uri.EscapeDataString(boxId)}").ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var items = JsonSerializer.Deserialize<List<ItemSimpleDto>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return items ?? new List<ItemSimpleDto>();
+            }
+
+            return new List<ItemSimpleDto>();
+        }
+        catch (Exception)
+        {
+            return new List<ItemSimpleDto>();
+        }
+    }
     
 }

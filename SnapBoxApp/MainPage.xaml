@@ -28,6 +28,11 @@
                 Text="Tulosteet" 
                 Clicked="OnPrintClicked"
                 HorizontalOptions="Fill" />
+             <Button
+                x:Name="BoxViewBtn"
+                Text="Laatikot" 
+                Clicked="OnBoxViewClicked"
+                HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
 

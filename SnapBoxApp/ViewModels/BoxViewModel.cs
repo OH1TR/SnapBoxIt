@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using SnapBoxApp.Model;
 using SnapBoxApp.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,25 +9,42 @@ using System.Linq;
 
 namespace SnapBoxApp.ViewModels;
 
-public class SearchViewModel : INotifyPropertyChanged
+public class BoxViewModel : INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
-    private string _searchQuery = string.Empty;
+    private ObservableCollection<string> _boxes = new();
+    private string _selectedBox = string.Empty;
     private bool _isLoading = false;
     private bool _hasResults = false;
     private bool _noResults = false;
 
-    public SearchViewModel()
+    public BoxViewModel()
     {
         _apiService = new ApiService();
-        SearchCommand = new Command<string>(async (query) => await PerformSearch(query));
         SearchResults = new ObservableCollection<SearchResultItem>();
+        LoadBoxesCommand = new Command(async () => await LoadBoxes());
+        LoadBoxContentsCommand = new Command<string>(async (boxId) => await LoadBoxContents(boxId));
+        
+        // Load boxes when view model is created
+        Task.Run(async () => await LoadBoxes());
     }
 
-    public string SearchQuery
+    public ObservableCollection<string> Boxes
     {
-        get => _searchQuery;
-        set => SetProperty(ref _searchQuery, value);
+        get => _boxes;
+        set => SetProperty(ref _boxes, value);
+    }
+
+    public string SelectedBox
+    {
+        get => _selectedBox;
+        set
+        {
+            if (SetProperty(ref _selectedBox, value) && !string.IsNullOrEmpty(value))
+            {
+                LoadBoxContentsCommand.Execute(value);
+            }
+        }
     }
 
     public bool IsLoading
@@ -36,6 +52,8 @@ public class SearchViewModel : INotifyPropertyChanged
         get => _isLoading;
         set => SetProperty(ref _isLoading, value);
     }
+
+    public bool IsNotLoading => !IsLoading;
 
     public bool HasResults
     {
@@ -51,11 +69,38 @@ public class SearchViewModel : INotifyPropertyChanged
 
     public ObservableCollection<SearchResultItem> SearchResults { get; }
 
-    public ICommand SearchCommand { get; }
+    public ICommand LoadBoxesCommand { get; }
+    public ICommand LoadBoxContentsCommand { get; }
 
-    private async Task PerformSearch(string query)
+    private async Task LoadBoxes()
     {
-        if (string.IsNullOrWhiteSpace(query))
+        try
+        {
+            IsLoading = true;
+            var boxes = await _apiService.GetBoxes();
+            
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                Boxes.Clear();
+                foreach (var box in boxes)
+                {
+                    Boxes.Add(box);
+                }
+            });
+        }
+        catch (Exception)
+        {
+            // Handle error - could show alert to user
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task LoadBoxContents(string boxId)
+    {
+        if (string.IsNullOrWhiteSpace(boxId))
             return;
 
         try
@@ -65,17 +110,11 @@ public class SearchViewModel : INotifyPropertyChanged
             NoResults = false;
             SearchResults.Clear();
 
-            var request = new SearchRequest
-            {
-                Query = query,
-                Count = 10
-            };
+            var items = await _apiService.GetBoxContents(boxId);
 
-            var results = await _apiService.SearchItems(request);
-
-            if (results.Any())
+            if (items.Any())
             {
-                foreach (var item in results)
+                foreach (var item in items)
                 {
                     var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
                     var searchResult = new SearchResultItem
@@ -121,4 +160,3 @@ public class SearchViewModel : INotifyPropertyChanged
         return true;
     }
 }
-

@@ -21,4 +21,9 @@
         ContentTemplate="{DataTemplate local:PrintPage}"
         Route="PrintPage" />
 
+    <ShellContent
+        Title="Laatikot"
+        ContentTemplate="{DataTemplate local:BoxViewPage}"
+        Route="BoxViewPage" />
+
 </Shell>
