@@ -49,7 +49,7 @@ public class SearchViewModel : INotifyPropertyChanged
         set => SetProperty(ref _noResults, value);
     }
 
-    public ObservableCollection<SearchResultItem> SearchResults { get; }
+    public ObservableCollection<SearchResultItem> SearchResults { get; set; }
 
     public ICommand SearchCommand { get; }
 
@@ -72,28 +72,37 @@ public class SearchViewModel : INotifyPropertyChanged
             };
 
             var results = await _apiService.SearchItems(request);
+            List<SearchResultItem> res=new List<SearchResultItem>();
 
-            if (results.Any())
-            {
-                foreach (var item in results)
+                if (results.Any())
                 {
-                    var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
-                    var searchResult = new SearchResultItem
+                    foreach (var item in results)
                     {
-                        Title = item.Title ?? "Ei otsikkoa",
-                        Category = item.Category,
-                        ImageBytes = imageBytes,
-                        BoxId = item.BoxId,
-                        DetailedDescription = item.DetailedDescription ?? "Ei kuvausta"
-                    };
-                    SearchResults.Add(searchResult);
+                        var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
+                        var searchResult = new SearchResultItem
+                        {
+                            Title = item.Title ?? "Ei otsikkoa",
+                            Category = item.Category,
+                            ImageBytes = imageBytes,
+                            BoxId = item.BoxId,
+                            DetailedDescription = item.DetailedDescription ?? "Ei kuvausta"
+                        };
+                        res.Add(searchResult);
+                    }
                 }
-                HasResults = true;
-            }
-            else
+
+			MainThread.BeginInvokeOnMainThread(() =>
             {
-                NoResults = true;
-            }
+                HasResults = res.Any();
+                NoResults = !res.Any();
+
+                SearchResults=new ObservableCollection<SearchResultItem>();
+
+                foreach (var r in res)
+                    SearchResults.Add(r);
+
+                OnPropertyChanged("SearchResults");
+            });
         }
         catch (Exception)
         {

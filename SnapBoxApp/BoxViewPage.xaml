@@ -12,11 +12,10 @@
                    FontSize="16" 
                    FontAttributes="Bold"/>
             <Picker x:Name="BoxPicker"
-                    Title="Valitse laatikko"
                     ItemsSource="{Binding Boxes}"
                     SelectedItem="{Binding SelectedBox}"
                     ItemDisplayBinding="{Binding .}"
-                    IsEnabled="{Binding IsNotLoading}"/>
+                    />
         </StackLayout>
 
         <!-- Search Results View -->

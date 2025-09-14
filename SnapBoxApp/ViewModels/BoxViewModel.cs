@@ -24,7 +24,7 @@ public class BoxViewModel : INotifyPropertyChanged
         SearchResults = new ObservableCollection<SearchResultItem>();
         LoadBoxesCommand = new Command(async () => await LoadBoxes());
         LoadBoxContentsCommand = new Command<string>(async (boxId) => await LoadBoxContents(boxId));
-        
+        Boxes.Add("Loading...");
         // Load boxes when view model is created
         Task.Run(async () => await LoadBoxes());
     }
@@ -32,7 +32,7 @@ public class BoxViewModel : INotifyPropertyChanged
     public ObservableCollection<string> Boxes
     {
         get => _boxes;
-        set => SetProperty(ref _boxes, value);
+        set => SetProperty(ref _boxes, value, "Boxes");
     }
 
     public string SelectedBox
@@ -67,7 +67,7 @@ public class BoxViewModel : INotifyPropertyChanged
         set => SetProperty(ref _noResults, value);
     }
 
-    public ObservableCollection<SearchResultItem> SearchResults { get; }
+    public ObservableCollection<SearchResultItem> SearchResults { get; set; }
 
     public ICommand LoadBoxesCommand { get; }
     public ICommand LoadBoxContentsCommand { get; }
@@ -112,27 +112,37 @@ public class BoxViewModel : INotifyPropertyChanged
 
             var items = await _apiService.GetBoxContents(boxId);
 
-            if (items.Any())
-            {
-                foreach (var item in items)
+            List<SearchResultItem> res=new List<SearchResultItem>();
+
+                if (items.Any())
                 {
-                    var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
-                    var searchResult = new SearchResultItem
+                    foreach (var item in items)
                     {
-                        Title = item.Title ?? "Ei otsikkoa",
-                        Category = item.Category,
-                        ImageBytes = imageBytes,
-                        BoxId = item.BoxId,
-                        DetailedDescription = item.DetailedDescription ?? "Ei kuvausta"
-                    };
-                    SearchResults.Add(searchResult);
+                        var imageBytes = await _apiService.GetImageBytes(item.BlobId, true);
+                        var searchResult = new SearchResultItem
+                        {
+                            Title = item.Title ?? "Ei otsikkoa",
+                            Category = item.Category,
+                            ImageBytes = imageBytes,
+                            BoxId = item.BoxId,
+                            DetailedDescription = item.DetailedDescription ?? "Ei kuvausta"
+                        };
+                        res.Add(searchResult);
+                    }
                 }
-                HasResults = true;
-            }
-            else
+
+			MainThread.BeginInvokeOnMainThread(() =>
             {
-                NoResults = true;
-            }
+                HasResults = res.Any();
+                NoResults = !res.Any();
+
+                SearchResults=new ObservableCollection<SearchResultItem>();
+
+                foreach (var r in res)
+                    SearchResults.Add(r);
+
+                OnPropertyChanged("SearchResults");
+            });
         }
         catch (Exception)
         {
