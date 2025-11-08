@@ -583,15 +583,38 @@ Vastaa aina suomeksi.`,
     
     console.log('connectWithFunctions: Data channel is open')
     
-    // Send session.update to ensure tools are active
+    // Send session.update to ensure tools are active and configure input audio transcription
     this.sendEvent({
       type: 'session.update',
       session: {
-        tools: INVENTORY_FUNCTIONS
+        tools: INVENTORY_FUNCTIONS,
+        input_audio_transcription: {
+          model: 'whisper-1'
+        },
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 500
+        }
       }
     })
     
-    console.log('connectWithFunctions: Sent session.update with tools')
+    console.log('connectWithFunctions: Sent session.update with tools and audio config')
+    
+    // Wait a moment for session update to be processed
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Create initial response to enable conversation
+    this.sendEvent({
+      type: 'response.create',
+      response: {
+        modalities: ['text', 'audio'],
+        instructions: 'Tervehdi käyttäjää lyhyesti suomeksi ja kerro että olet valmis auttamaan varaston hallinnassa.'
+      }
+    })
+    
+    console.log('connectWithFunctions: Sent initial response.create to start conversation')
   }
 }
 

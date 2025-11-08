@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="print-page">
     <div class="header">
-      <button @click="goBack" class="back-button">? Takaisin</button>
+        <button @click="goBack" class="back-button">← Takaisin</button>
       <h1>Tulosta tarra</h1>
     </div>
 
