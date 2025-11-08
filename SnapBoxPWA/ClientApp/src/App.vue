@@ -9,15 +9,22 @@
     />
     
     <main>
-      <router-view />
+      <router-view 
+        :selected-box-id="selectedBoxId"
+        @camera-trigger="handleCameraTrigger"
+      />
     </main>
 
     <!-- Background Voice Controller (no UI) -->
     <VoiceController 
       :is-active="isVoiceActive"
+      :router="router"
       @update:connected="isVoiceConnected = $event"
       @update:messages="voiceMessages = $event"
       @error="handleVoiceError"
+      @navigate="handleNavigation"
+      @camera="handleCameraControl"
+      @select-box="handleBoxSelection"
     />
 
     <!-- Error notification -->
@@ -30,9 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
+import { useRouter } from 'vue-router'
 import AppHeader from './components/AppHeader.vue'
 import VoiceController from './components/VoiceController.vue'
+import type { NavigationEvent, CameraControlEvent } from './services/inventoryRealtimeService'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -40,10 +49,17 @@ interface Message {
   timestamp: Date
 }
 
+const router = useRouter()
 const isVoiceActive = ref(false)
 const isVoiceConnected = ref(false)
 const voiceMessages = ref<Message[]>([])
 const errorMessage = ref('')
+const selectedBoxId = ref<string>('')
+const cameraTrigger = ref(0)
+
+// Provide selected box ID to child components
+provide('voiceSelectedBoxId', selectedBoxId)
+provide('cameraTrigger', cameraTrigger)
 
 function toggleVoice() {
   isVoiceActive.value = !isVoiceActive.value
@@ -55,6 +71,31 @@ function handleVoiceError(message: string) {
   setTimeout(() => {
     errorMessage.value = ''
   }, 5000)
+}
+
+function handleNavigation(event: NavigationEvent) {
+  console.log('Navigation event in App:', event)
+  // Additional navigation handling if needed
+}
+
+function handleCameraControl(event: CameraControlEvent) {
+  console.log('Camera control event in App:', event)
+  
+  if (event.action === 'capture' && event.boxId) {
+    selectedBoxId.value = event.boxId
+    // Trigger camera capture by incrementing the trigger
+    cameraTrigger.value++
+  }
+}
+
+function handleBoxSelection(boxId: string) {
+  console.log('Box selected in App:', boxId)
+  selectedBoxId.value = boxId
+}
+
+function handleCameraTrigger() {
+  // This is called from UploadPage when it's ready to capture
+  console.log('Camera trigger acknowledged')
 }
 </script>
 

@@ -78,6 +78,13 @@ A complete integration of OpenAI's Realtime WebRTC API into the SnapBoxPWA appli
 - Persistent connection while active
 - Visual status indicators (?? inactive, ? connecting, ??? connected)
 
+? **Voice-Controlled Navigation** ? NEW
+- Ask "Miss‰ on X?" to search and view results automatically
+- Say "N‰yt‰ laatikko X" to view specific box contents
+- Natural language commands in Finnish
+- Automatic page navigation and data loading
+- See [VOICE_NAVIGATION.md](VOICE_NAVIGATION.md) for details
+
 ? **Chat History Panel**
 - Collapsible history panel in header
 - Only visible when voice is active
@@ -101,6 +108,7 @@ A complete integration of OpenAI's Realtime WebRTC API into the SnapBoxPWA appli
 - Pulsing animation when connected
 - Error notifications (auto-dismiss)
 - Message role indicators (user/assistant/system)
+- Navigation notifications (?? search, ?? box view)
 
 ? **Secure Architecture**
 - API key stored server-side only
@@ -111,6 +119,22 @@ A complete integration of OpenAI's Realtime WebRTC API into the SnapBoxPWA appli
 - Touch-friendly header buttons
 - Collapsible history panel
 - Optimized for mobile screens
+
+? **Accessibility**
+- Keyboard navigation support
+- Clear visual status indicators
+- Icon + color coding for states
+- Emoji icons for clarity
+- Error messages with auto-dismiss
+
+? **Mobile Support**
+
+? Works on mobile browsers with:
+- Touch-friendly header buttons
+- Responsive header layout
+- Mobile microphone access
+- Optimized panel sizing
+- Thumb-friendly button placement
 
 ## How It Works
 
@@ -126,12 +150,22 @@ Background (VoiceController.vue)
   ?? Handles audio streaming
   ?? Processes events
   ?? Updates message list
+  ?? Handles navigation events ? NEW
 
 Service Layer
   ?? inventoryRealtimeService.ts
       ?? WebRTC setup
       ?? Function calling
       ?? Event management
+      ?? Navigation functions ? NEW
+          ?? navigate_to_search
+          ?? navigate_to_box_view
+
+Page Integration ? NEW
+  ?? SearchPage.vue
+  ?   ?? Auto-search from query param
+  ?? BoxViewPage.vue
+      ?? Auto-load from box param
 ```
 
 ### User Flow
@@ -149,13 +183,25 @@ Service Layer
    - Assistant responds with voice + text
    - All while user can navigate freely
 
-3. **View History**
+3. **Voice Navigation** ? NEW
+   - User asks "Miss‰ on ruuvimeisseli?" (Where is screwdriver?)
+   - AI performs search via `search_items` function
+   - AI calls `navigate_to_search` with query
+   - Page automatically navigates to `/search?q=ruuvimeisseli`
+   - Search results are displayed
+   - AI confirms: "Lˆysin 3 ruuvimeisseli‰. N‰yt‰n ne nyt hakun‰kym‰ss‰."
+   - **OR** User says "N‰yt‰ laatikko BOX-001" (Show box BOX-001)
+   - AI calls `navigate_to_box_view` with box ID
+   - Page navigates to `/boxes?box=BOX-001`
+   - Box contents are loaded and displayed
+
+4. **View History**
    - Click speech bubble button (??)
    - History panel slides down from header
    - Shows all conversation messages
    - Click again or ◊  to close
 
-4. **Deactivation**
+5. **Deactivation**
    - Click microphone button again
    - Connection closes gracefully
    - Button returns to inactive state (??)
@@ -197,12 +243,28 @@ The existing CORS policy in SnapBoxApi allows the PWA to access the endpoint.
 7. Say "Hello, can you help me with my inventory?"
 8. Click ?? to view conversation history
 
+### Voice Navigation Test ? NEW
+1. Make sure voice is active (??? icon pulsing)
+2. **Test item search:**
+   - Say: "Miss‰ on ruuvimeisseli?" (Where is screwdriver?)
+   - Expected: Navigates to search page, shows results
+   - AI responds in Finnish
+3. **Test box view:**
+   - Say: "N‰yt‰ laatikko BOX-001" (Show box BOX-001)
+   - Expected: Navigates to boxes page, loads BOX-001 contents
+   - AI responds in Finnish
+4. **Check chat history:**
+   - Click ?? to see navigation messages
+   - Should see: "?? Siirryt‰‰n hakun‰kym‰‰n..." or "?? Siirryt‰‰n laatikkon‰kym‰‰n..."
+
 ### Expected Result
 - Button shows pulsing green microphone (???)
 - Your speech is transcribed
 - Assistant responds with voice
 - Click ?? shows full conversation
 - Can navigate to other pages while staying connected
+- ? Voice commands trigger automatic navigation
+- ? Pages auto-load based on voice requests
 
 ## Browser Support
 
@@ -228,27 +290,29 @@ Sessions automatically expire to prevent runaway costs.
 
 The implementation is ready for:
 
-1. **Voice Navigation** (priority)
-   - "Go to upload page"
-   - "Show my boxes"
-   - "Open settings"
-   - Navigate entire app by voice
+1. **Voice Navigation** (priority) ? IMPLEMENTED
+   - ? "Miss‰ on X?" ? Search and show results
+   - ? "N‰yt‰ laatikko X" ? View box contents
+   - ?? "Mene p‰‰sivulle" ? Navigate to home
+   - ?? "Avaa asetukset" ? Navigate to settings
+   - ?? "Tulosta tarra" ? Navigate to print page
 
 2. **Advanced Function Calling**
-   - Search inventory via voice
+   - Search inventory via voice (? implemented)
    - Add/update items by speaking
-   - Check box contents verbally
+   - Check box contents verbally (? implemented)
+   - Move items between boxes by voice
 
 3. **UI Enhancements**
    - Voice activity visualization in header
    - Notification badges for new messages
    - Custom wake words
-   - Multi-language support
+   - Multi-language support (currently Finnish)
 
 4. **Integration**
-   - Connect to existing search functionality
+   - Connect to existing search functionality (? implemented)
    - Link with upload workflow
-   - Integrate with box management
+   - Integrate with box management (? implemented)
 
 ## Advantages of New Implementation
 

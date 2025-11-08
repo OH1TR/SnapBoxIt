@@ -67,12 +67,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import apiService from '../services/apiService'
 import type { ItemDto } from '../types'
 
 const router = useRouter()
+const route = useRoute()
 const boxes = ref<string[]>([])
 const selectedBox = ref<string>('')
 const boxContents = ref<ItemDto[]>([])
@@ -83,6 +84,21 @@ const error = ref<string>('')
 
 onMounted(async () => {
   await loadBoxes()
+  
+  // Check if there's a box parameter from voice navigation
+  const boxParam = route.query.box as string
+  if (boxParam && boxes.value.includes(boxParam)) {
+    selectedBox.value = boxParam
+    await loadBoxContents()
+  }
+})
+
+// Watch for changes in route query (for voice navigation updates)
+watch(() => route.query.box, async (newBox) => {
+  if (newBox && typeof newBox === 'string' && boxes.value.includes(newBox)) {
+    selectedBox.value = newBox
+    await loadBoxContents()
+  }
 })
 
 onBeforeUnmount(() => {

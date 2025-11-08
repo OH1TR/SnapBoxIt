@@ -117,12 +117,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onBeforeUnmount, onMounted, computed, nextTick, watch, inject } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import apiService from '../services/apiService'
 import type { ItemDto } from '../types'
 
 const router = useRouter()
+const route = useRoute()
 const videoElement = ref<HTMLVideoElement | null>(null)
 const canvasElement = ref<HTMLCanvasElement | null>(null)
 const boxId = ref<string>('')
@@ -137,6 +138,33 @@ const isSecureContext = ref<boolean>(false)
 const hasCameraSupport = ref<boolean>(false)
 let mediaStream: MediaStream | null = null
 
+// Inject voice-controlled box selection and camera trigger
+const voiceSelectedBoxId = inject<any>('voiceSelectedBoxId', ref(''))
+const cameraTrigger = inject<any>('cameraTrigger', ref(0))
+
+// Watch for voice-selected box ID
+watch(() => voiceSelectedBoxId.value, (newBoxId) => {
+  if (newBoxId && !boxId.value) {
+    boxId.value = newBoxId
+    console.log('Box ID set from voice command:', newBoxId)
+  }
+})
+
+// Watch for camera trigger from voice command
+watch(() => cameraTrigger.value, async () => {
+  if (cameraTrigger.value > 0) {
+    console.log('Camera trigger from voice command')
+    if (!cameraActive.value && isCameraSupported.value) {
+      await startCamera()
+      // Wait a bit for camera to be ready
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    if (cameraActive.value && boxId.value) {
+      await capturePhoto()
+    }
+  }
+})
+
 // Check if camera is supported
 const isCameraSupported = computed(() => {
   return isSecureContext.value && hasCameraSupport.value
@@ -144,6 +172,12 @@ const isCameraSupported = computed(() => {
 
 // Check camera support on mount
 onMounted(async () => {
+  // Check for box parameter from route (could be from voice navigation)
+  const boxParam = route.query.box as string
+  if (boxParam) {
+    boxId.value = boxParam
+  }
+  
   // Check if we're in a secure context (HTTPS or localhost)
   isSecureContext.value = window.isSecureContext || false
   
@@ -417,40 +451,6 @@ onBeforeUnmount(() => {
 
 .form-section {
   margin-bottom: 30px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.input-field, .textarea-field {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 16px;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-
-.input-field:focus, .textarea-field:focus {
-  outline: none;
-  border-color: #0066cc;
-}
-
-.camera-section {
-  margin: 20px 0;
-}
-
-.camera-container {
-  width: 100%;
 }
 
 .camera-video {

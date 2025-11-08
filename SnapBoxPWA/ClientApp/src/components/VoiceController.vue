@@ -5,7 +5,8 @@
 
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue'
-import inventoryRealtimeService from '../services/inventoryRealtimeService'
+import type { Router } from 'vue-router'
+import inventoryRealtimeService, { type NavigationEvent, type CameraControlEvent, type BoxSelectionEvent } from '../services/inventoryRealtimeService'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -15,18 +16,23 @@ interface Message {
 
 const props = defineProps<{
   isActive: boolean
+  router: Router
 }>()
 
 const emit = defineEmits<{
   (e: 'update:connected', value: boolean): void
   (e: 'update:messages', value: Message[]): void
   (e: 'error', message: string): void
+  (e: 'navigate', event: NavigationEvent): void
+  (e: 'camera', event: CameraControlEvent): void
+  (e: 'select-box', boxId: string): void
 }>()
 
 const realtimeService = inventoryRealtimeService
 const messages = ref<Message[]>([])
 const isConnected = ref(false)
 const isConnecting = ref(false)
+const selectedBoxId = ref<string>('')
 
 // Watch for activation changes
 watch(() => props.isActive, async (active) => {
@@ -93,6 +99,24 @@ function setupEventHandlers() {
     addMessage('system', `?? Suoritetaan toiminto: ${name}...`)
   })
 
+  // Handle navigation events
+  realtimeService.on('navigate', (event: NavigationEvent) => {
+    console.log('Navigation event received:', event)
+    handleNavigation(event)
+  })
+
+  // Handle camera control events
+  realtimeService.on('camera', (event: CameraControlEvent) => {
+    console.log('Camera control event received:', event)
+    handleCameraControl(event)
+  })
+
+  // Handle box selection events
+  realtimeService.on('select_box', (event: BoxSelectionEvent) => {
+    console.log('Box selection event received:', event)
+    handleBoxSelection(event)
+  })
+
   // Handle errors
   realtimeService.on('error', (event: any) => {
     emit('error', event.error?.message || 'Tapahtui virhe')
@@ -106,11 +130,87 @@ function setupEventHandlers() {
   })
 }
 
+function handleNavigation(event: NavigationEvent) {
+  console.log('Handling navigation:', event)
+  
+  if (event.route === '/search' && event.params?.query) {
+    // Navigate to search page with query
+    addMessage('system', `?? Siirryt‰‰n hakun‰kym‰‰n hakusanalla: "${event.params.query}"`)
+    props.router.push({
+      path: '/search',
+      query: { q: event.params.query }
+    })
+  } else if (event.route === '/boxes' && event.params?.boxId) {
+    // Navigate to box view with selected box
+    addMessage('system', `?? Siirryt‰‰n laatikkon‰kym‰‰n: ${event.params.boxId}`)
+    props.router.push({
+      path: '/boxes',
+      query: { box: event.params.boxId }
+    })
+  } else if (event.route === '/upload') {
+    // Navigate to upload page
+    addMessage('system', '?? Siirryt‰‰n lataussivulle')
+    const query: any = {}
+    if (event.params?.boxId) {
+      query.box = event.params.boxId
+      selectedBoxId.value = event.params.boxId
+    } else if (selectedBoxId.value) {
+      query.box = selectedBoxId.value
+    }
+    props.router.push({
+      path: '/upload',
+      query
+    })
+  } else {
+    // Generic navigation
+    addMessage('system', `?? Siirryt‰‰n sivulle: ${event.route}`)
+    props.router.push(event.route)
+  }
+  
+  // Emit navigation event to parent
+  emit('navigate', event)
+}
+
+function handleCameraControl(event: CameraControlEvent) {
+  console.log('Handling camera control:', event)
+  
+  if (event.action === 'capture') {
+    if (event.boxId) {
+      selectedBoxId.value = event.boxId
+      addMessage('system', `?? Otetaan kuva laatikkoon: ${event.boxId}`)
+      emit('camera', event)
+    } else if (selectedBoxId.value) {
+      addMessage('system', `?? Otetaan kuva laatikkoon: ${selectedBoxId.value}`)
+      emit('camera', { ...event, boxId: selectedBoxId.value })
+    } else {
+      addMessage('system', '?? Laatikko pit‰‰ valita ensin ennen kuvan ottamista!')
+      emit('error', 'Valitse laatikko ensin')
+    }
+  }
+}
+
+function handleBoxSelection(event: BoxSelectionEvent) {
+  console.log('Handling box selection:', event)
+  
+  // Always update selected box (allow re-selection)
+  const previousBox = selectedBoxId.value
+  selectedBoxId.value = event.boxId
+  
+  if (previousBox && previousBox !== event.boxId) {
+    addMessage('system', `? Laatikko vaihdettu: ${previousBox} ? ${event.boxId}`)
+  } else {
+    addMessage('system', `? Laatikko ${event.boxId} valittu`)
+  }
+  
+  emit('select-box', event.boxId)
+}
+
 function disconnect() {
   realtimeService.disconnect()
   isConnected.value = false
   emit('update:connected', false)
   addMessage('system', 'ƒ‰niohjaus sammutettu')
+  selectedBoxId.value = ''
 }
 
 function addMessage(role: 'user' | 'assistant' | 'system', content: string) {

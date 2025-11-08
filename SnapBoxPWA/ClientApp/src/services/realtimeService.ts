@@ -186,6 +186,14 @@ export class RealtimeService {
   }
 
   /**
+   * Emit a custom event to registered handlers
+   */
+  protected emit(eventType: string, data: any): void {
+    const handlers = this.eventHandlers.get(eventType) || []
+    handlers.forEach(handler => handler(data))
+  }
+
+  /**
    * Register an event handler
    */
   on(eventType: string, handler: Function): void {

@@ -58,17 +58,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import apiService from '../services/apiService'
 import type { ItemDto } from '../types'
 
 const router = useRouter()
+const route = useRoute()
 const searchQuery = ref<string>('')
 const searchResults = ref<ItemDto[]>([])
 const loading = ref<boolean>(false)
 const noResults = ref<boolean>(false)
 const error = ref<string>('')
+
+onMounted(async () => {
+  // Check if there's a query parameter from voice navigation
+  const queryParam = route.query.q as string
+  if (queryParam) {
+    searchQuery.value = queryParam
+    await performSearch()
+  }
+})
+
+// Watch for changes in route query (for voice navigation updates)
+watch(() => route.query.q, async (newQuery) => {
+  if (newQuery && typeof newQuery === 'string') {
+    searchQuery.value = newQuery
+    await performSearch()
+  }
+})
 
 onBeforeUnmount(() => {
   // Clean up blob URLs to prevent memory leaks
