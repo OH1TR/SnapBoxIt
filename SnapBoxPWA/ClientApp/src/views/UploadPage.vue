@@ -26,16 +26,6 @@
             <p v-else>Selaimesi ei tue kameran käyttöä tai kameraa ei löydy.</p>
           </div>
 
-          <div v-if="!cameraActive && !previewImage" class="camera-controls">
-            <button
-              @click="startCamera"
-              :disabled="!boxId || uploading || !isCameraSupported"
-              class="btn-camera"
-            >
-              ?? {{ uploading ? 'Ladataan...' : 'Avaa kamera' }}
-            </button>
-          </div>
-
           <div v-if="cameraActive" class="camera-container">
             <video
               ref="videoElement"
@@ -44,7 +34,7 @@
               class="camera-video"
             ></video>
             <div class="camera-controls">
-              <button @click="capturePhoto" class="btn-capture">
+              <button @click="capturePhoto" class="btn-capture" :disabled="!boxId">
                 ?? Ota kuva
               </button>
               <button @click="stopCamera" class="btn-secondary">
@@ -127,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount, onMounted, computed } from 'vue';
+import { ref, onBeforeUnmount, onMounted, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import apiService from '../services/apiService';
 
@@ -152,7 +142,7 @@ const isCameraSupported = computed(() => {
 });
 
 // Check camera support on mount
-onMounted(() => {
+onMounted(async () => {
   // Check if we're in a secure context (HTTPS or localhost)
   isSecureContext.value = window.isSecureContext || false;
   
@@ -165,6 +155,11 @@ onMounted(() => {
   
   if (!hasCameraSupport.value) {
     console.warn('getUserMedia API not supported in this browser.');
+  }
+
+  // Automatically start camera if supported
+  if (isCameraSupported.value) {
+    await startCamera();
   }
 });
 
@@ -195,9 +190,25 @@ async function startCamera() {
       }
     });
     
+    // Set cameraActive first so the video element is rendered
+    cameraActive.value = true;
+    
+    // Wait for next tick to ensure video element is in DOM
+    await nextTick();
+    
     if (videoElement.value) {
       videoElement.value.srcObject = mediaStream;
-      cameraActive.value = true;
+      
+      // Wait for video to be ready and start playing
+      try {
+        await videoElement.value.play();
+      } catch (playErr) {
+        console.warn('Video play promise rejected:', playErr);
+        // This is often fine - the video will autoplay anyway
+      }
+    } else {
+      error.value = 'Kameran alustus epäonnistui';
+      stopCamera();
     }
   } catch (err) {
     console.error('Camera error:', err);
@@ -216,6 +227,7 @@ async function startCamera() {
     } else {
       error.value = `Kameran käynnistys epäonnistui: ${err.message}`;
     }
+    cameraActive.value = false;
   }
 }
 
@@ -228,6 +240,11 @@ function stopCamera() {
 }
 
 async function capturePhoto() {
+  if (!boxId.value) {
+    error.value = 'Syötä laatikon tunnus ennen kuvan ottamista';
+    return;
+  }
+
   if (!videoElement.value || !canvasElement.value) return;
 
   const video = videoElement.value;
