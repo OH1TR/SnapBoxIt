@@ -32,6 +32,18 @@ export interface BoxSelectionEvent {
   boxId: string
 }
 
+// Reject item event type
+export interface RejectItemEvent {
+  type: 'reject_item'
+}
+
+// Print label event type
+export interface PrintLabelEvent {
+  type: 'print_label'
+  labelType: 'qrlabel' | 'label'
+  text: string
+}
+
 export class InventoryRealtimeService extends RealtimeService {
   private currentCallId: string | null = null
 
@@ -97,6 +109,15 @@ export class InventoryRealtimeService extends RealtimeService {
           break
         case 'select_box':
           await this.handleSelectBox(args)
+          break
+        case 'reject_current_item':
+          await this.handleRejectCurrentItem()
+          break
+        case 'print_qr_label':
+          await this.handlePrintQrLabel(args)
+          break
+        case 'print_text_label':
+          await this.handlePrintTextLabel(args)
           break
         default:
           console.warn('Unknown function call:', name)
@@ -389,6 +410,91 @@ export class InventoryRealtimeService extends RealtimeService {
   }
 
   /**
+   * Handle reject current item function call
+   */
+  private async handleRejectCurrentItem(): Promise<void> {
+    try {
+      console.log('Reject current item requested')
+      
+      // Emit reject event to UI
+      this.emit('reject_item', {
+        type: 'reject_item'
+      } as RejectItemEvent)
+
+      this.sendFunctionResult(this.currentCallId!, {
+        success: true,
+        message: 'Reject command sent to UI'
+      })
+    } catch (error: any) {
+      console.error('Error rejecting item:', error)
+      this.sendFunctionResult(this.currentCallId!, {
+        success: false,
+        error: error.message
+      })
+    }
+  }
+
+  /**
+   * Handle print QR label function call
+   */
+  private async handlePrintQrLabel(args: string): Promise<void> {
+    try {
+      const { text } = JSON.parse(args)
+      console.log('Printing QR label:', text)
+      
+      const success = await apiService.printLabel('qrlabel', text)
+
+      if (success) {
+        this.sendFunctionResult(this.currentCallId!, {
+          success: true,
+          message: `Laatikkotarra "${text}" lähetetty tulostimelle`
+        })
+      } else {
+        this.sendFunctionResult(this.currentCallId!, {
+          success: false,
+          error: 'Tarran tulostus epäonnistui'
+        })
+      }
+    } catch (error: any) {
+      console.error('Error printing QR label:', error)
+      this.sendFunctionResult(this.currentCallId!, {
+        success: false,
+        error: error.message
+      })
+    }
+  }
+
+  /**
+   * Handle print text label function call
+   */
+  private async handlePrintTextLabel(args: string): Promise<void> {
+    try {
+      const { text } = JSON.parse(args)
+      console.log('Printing text label:', text)
+      
+      const success = await apiService.printLabel('label', text)
+
+      if (success) {
+        this.sendFunctionResult(this.currentCallId!, {
+          success: true,
+          message: `Vapaamuotoinen tarra lähetetty tulostimelle`
+        })
+      } else {
+        this.sendFunctionResult(this.currentCallId!, {
+          success: false,
+          error: 'Tarran tulostus epäonnistui'
+        })
+      }
+    } catch (error: any) {
+      console.error('Error printing text label:', error)
+      this.sendFunctionResult(this.currentCallId!, {
+        success: false,
+        error: error.message
+      })
+    }
+  }
+
+  /**
    * Send function call result back to the assistant
    */
   protected sendFunctionResult(callId: string, result: any): void {
@@ -417,7 +523,7 @@ export class InventoryRealtimeService extends RealtimeService {
     
     // First create session with function definitions
     await this.createSession({
-      instructions: `Olet tekoälyavustaja SnapBox-varastojärjestelmälle.
+      instructions: `Olet teköälyavustaja SnapBox-varastojärjestelmälle.
 Voit auttaa käyttäjiä:
 - Etsimään tavaroita varastosta
 - Näyttämään laatikon sisällön
@@ -427,10 +533,12 @@ Voit auttaa käyttäjiä:
 - Valitsemaan laatikoita
 - Päivittämään tietojen tietoja
 - Poistamaan tavaroita
+- Hylkäämään kohteita
+- Tulostamaan tarroja
 
 TÄRKEÄÄ - NAVIGOINTI:
 - Kun käyttäjä kysyy "missä on X" tai "etsi X", käytä ENSIN search_items-funktiota löytääksesi tavaran.
-  SITTEN käytä navigate_to_search-funktiota näkyäksesi tulokset hakunäkymässä.
+  SITTEN käytä navigate_to_search-funktiota näköäksesi tulokset hakunäkymässä.
 - Kun käyttäjä kysyy "näytä laatikko X" tai "mitä laatikossa X on", käytä navigate_to_box_view-funktiota.
 - Kun käyttäjä sanoo "etsi" tai "hae", navigoi hakunäkymään käyttämällä navigate_to_search-funktiota.
 
@@ -441,6 +549,17 @@ TÄRKEÄÄ - KUVAAMINEN:
   * Jos boxId ei ole tiedossa, kerro että laatikko pitää valita ensin ja käytä select_box-funktiota.
 - Kun käyttäjä sanoo "valitse laatikko X" tai "vaihda laatikko X", käytä select_box-funktiota.
 - select_box-funktiota voi käyttää AINA kun käyttäjä haluaa vaihtaa laatikkoa, vaikka laatikko olisi jo valittu.
+
+TÄRKEÄÄ - HYLKÄÄMINEN:
+- Kun käyttäjä sanoo "hylkää", "peruuta", "poista", "en halua", "ei kelpaa" tai vastaavaa, käytä reject_current_item-funktiota.
+- VARMISTA AINA käyttäjältä ennen hylkäämistä: "Haluatko varmasti hylätä tämän kohteen?"
+- Funktio toimii vain jos käyttäjällä on auki kohde (esim. UploadPage).
+
+TÄRKEÄÄ - TARROJEN TULOSTUS:
+- Kun käyttäjä sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X", käytä print_qr_label-funktiota tekstillä X.
+- Kun käyttäjä sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra", kysy käyttäjältä tekstiä ja käytä print_text_label-funktiota.
+- Laatikkotarra (qrlabel) sisältää QR-koodin ja tekstin.
+- Vapaamuotoinen tarra (label) sisältää vain tekstin, ja se voi olla useampirivisesti.
 
 Pidä vastauksesi lyhyinä ja keskustelunomaisina, koska tämä on puhekäyttöliittymä.
 Vastaa aina suomeksi.`,
@@ -597,6 +716,15 @@ export const INVENTORY_FUNCTIONS = [
   },
   {
     type: 'function',
+    name: 'reject_current_item',
+    description: 'Hylkää nykyinen kohde (esim. juuri otettu kuva tai avattu kohde). Käytä kun käyttäjä sanoo "hylkää", "peruuta", "poista tämä", "en halua", "ei kelpaa" tai vastaavaa. HUOM: Varmista aina käyttäjältä ennen hylkäämistä.',
+    parameters: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    type: 'function',
     name: 'save_item',
     description: 'Tallenna tai päivitä tavaran tiedot varastoon. Käytä tätä kun käyttäjä haluaa muuttaa tavaran tietoja.',
     parameters: {
@@ -639,6 +767,36 @@ export const INVENTORY_FUNCTIONS = [
         }
       },
       required: ['itemId']
+    }
+  },
+  {
+    type: 'function',
+    name: 'print_qr_label',
+    description: 'Tulosta laatikkotarra QR-koodilla. Käytä kun käyttäjä sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X". Tarra sisältää QR-koodin ja tekstin.',
+    parameters: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description: 'Tekstisisältö joka tulostetaan tarraan ja QR-koodiin (esim. "BOX-001")'
+        }
+      },
+      required: ['text']
+    }
+  },
+  {
+    type: 'function',
+    name: 'print_text_label',
+    description: 'Tulosta vapaamuotoinen tekstilabel ilman QR-koodia. Käytä kun käyttäjä sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra". Tekstin voi olla useampirivisesti käyttämällä \\n-merkkiä.',
+    parameters: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description: 'Tekstisisältö joka tulostetaan tarraan. Voi sisältää rivinvaihtoja (\\n).'
+        }
+      },
+      required: ['text']
     }
   }
 ]

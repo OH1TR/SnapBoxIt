@@ -141,10 +141,11 @@ let mediaStream: MediaStream | null = null
 // Inject voice-controlled box selection and camera trigger
 const voiceSelectedBoxId = inject<any>('voiceSelectedBoxId', ref(''))
 const cameraTrigger = inject<any>('cameraTrigger', ref(0))
+const voiceReject = inject<any>('voiceReject', ref(0))
 
 // Watch for voice-selected box ID
 watch(() => voiceSelectedBoxId.value, (newBoxId) => {
-  if (newBoxId && !boxId.value) {
+  if (newBoxId) {
     boxId.value = newBoxId
     console.log('Box ID set from voice command:', newBoxId)
   }
@@ -162,6 +163,14 @@ watch(() => cameraTrigger.value, async () => {
     if (cameraActive.value && boxId.value) {
       await capturePhoto()
     }
+  }
+})
+
+// Watch for voice reject command
+watch(() => voiceReject.value, async () => {
+  if (voiceReject.value > 0 && uploadedItem.value) {
+    console.log('Reject trigger from voice command')
+    await rejectItem()
   }
 })
 
@@ -373,9 +382,6 @@ async function saveItem(): Promise<void> {
 async function rejectItem(): Promise<void> {
   if (!uploadedItem.value) return
 
-  if (!confirm('Haluatko varmasti hyl‰t‰ t‰m‰n kohteen?')) {
-    return
-  }
 
   try {
     deleting.value = true
@@ -383,7 +389,6 @@ async function rejectItem(): Promise<void> {
     
     const success = await apiService.deleteItem(uploadedItem.value.id)
     if (success) {
-      alert('Kohde hyl‰tty onnistuneesti!')
       resetForm()
     } else {
       error.value = 'Hyl‰t‰‰n ep‰onnistui'

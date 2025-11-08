@@ -25,6 +25,7 @@
       @navigate="handleNavigation"
       @camera="handleCameraControl"
       @select-box="handleBoxSelection"
+      @reject="handleReject"
     />
 
     <!-- Error notification -->
@@ -56,10 +57,12 @@ const voiceMessages = ref<Message[]>([])
 const errorMessage = ref('')
 const selectedBoxId = ref<string>('')
 const cameraTrigger = ref(0)
+const voiceReject = ref(0)
 
 // Provide selected box ID to child components
 provide('voiceSelectedBoxId', selectedBoxId)
 provide('cameraTrigger', cameraTrigger)
+provide('voiceReject', voiceReject)
 
 function toggleVoice() {
   isVoiceActive.value = !isVoiceActive.value
@@ -91,6 +94,11 @@ function handleCameraControl(event: CameraControlEvent) {
 function handleBoxSelection(boxId: string) {
   console.log('Box selected in App:', boxId)
   selectedBoxId.value = boxId
+}
+
+function handleReject() {
+  console.log('Reject command received in App')
+  voiceReject.value++
 }
 
 function handleCameraTrigger() {

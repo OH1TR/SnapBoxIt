@@ -26,6 +26,7 @@ const emit = defineEmits<{
   (e: 'navigate', event: NavigationEvent): void
   (e: 'camera', event: CameraControlEvent): void
   (e: 'select-box', boxId: string): void
+  (e: 'reject'): void
 }>()
 
 const realtimeService = inventoryRealtimeService
@@ -117,6 +118,12 @@ function setupEventHandlers() {
     handleBoxSelection(event)
   })
 
+  // Handle reject events
+  realtimeService.on('reject_item', () => {
+    console.log('Reject event received')
+    handleReject()
+  })
+
   // Handle errors
   realtimeService.on('error', (event: any) => {
     emit('error', event.error?.message || 'Tapahtui virhe')
@@ -197,12 +204,18 @@ function handleBoxSelection(event: BoxSelectionEvent) {
   selectedBoxId.value = event.boxId
   
   if (previousBox && previousBox !== event.boxId) {
-    addMessage('system', `? Laatikko vaihdettu: ${previousBox} ? ${event.boxId}`)
+    addMessage('system', `?? Laatikko vaihdettu: ${previousBox} ? ${event.boxId}`)
   } else {
-    addMessage('system', `? Laatikko ${event.boxId} valittu`)
+    addMessage('system', `?? Laatikko ${event.boxId} valittu`)
   }
   
   emit('select-box', event.boxId)
+}
+
+function handleReject() {
+  console.log('Handling reject command')
+  addMessage('system', '??? Hyl‰t‰‰n kohde...')
+  emit('reject')
 }
 
 function disconnect() {
