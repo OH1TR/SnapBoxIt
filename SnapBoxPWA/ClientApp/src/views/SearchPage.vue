@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <div class="search-page">
     <div class="header">
-      <button @click="goBack" class="back-button">? Takaisin</button>
+      <button @click="goBack" class="back-button">← Takaisin</button>
       <h1>Hae komponentteja</h1>
     </div>
 
@@ -11,7 +11,7 @@
           v-model="searchQuery"
           @keyup.enter="performSearch"
           type="text"
-          placeholder="Sy�t� hakusana..."
+          placeholder="Syötä hakusana..."
           class="search-input"
         />
         <button @click="performSearch" :disabled="loading || !searchQuery" class="btn-search">
@@ -42,7 +42,7 @@
               <h3>{{ result.title || 'Ei otsikkoa' }}</h3>
               <div class="result-meta">
                 <span class="category">{{ result.category }}</span>
-                <span class="box-id">?? {{ result.boxId }}</span>
+                <span class="box-id">📦 {{ result.boxId }}</span>
               </div>
               <p class="description">{{ result.detailedDescription || 'Ei kuvausta' }}</p>
             </div>
@@ -154,7 +154,7 @@ async function performSearch(): Promise<void> {
       noResults.value = true
     }
   } catch (err) {
-    error.value = `Haku ep�onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    error.value = `Haku epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
     console.error('Search error:', err)
     noResults.value = true
   } finally {

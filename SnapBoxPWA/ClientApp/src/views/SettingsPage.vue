@@ -1,7 +1,7 @@
-<template>
+Ôªø<template>
   <div class="settings-page">
     <div class="header">
-      <button @click="goBack" class="back-button">? Takaisin</button>
+      <button @click="goBack" class="back-button">‚Üê Takaisin</button>
       <h1>Asetukset</h1>
     </div>
 
@@ -18,12 +18,12 @@
       </div>
 
       <div class="form-group">
-        <label for="username">K‰ytt‰j‰tunnus</label>
+        <label for="username">K√§ytt√§j√§tunnus</label>
         <input
           id="username"
           v-model="usernameInput"
           type="text"
-          placeholder="K‰ytt‰j‰tunnus"
+          placeholder="K√§ytt√§j√§tunnus"
           class="input-field"
         />
       </div>
@@ -41,7 +41,7 @@
 
       <div class="button-group">
         <button @click="save" class="btn-primary">Tallenna</button>
-        <button @click="clear" class="btn-secondary">Tyhjenn‰</button>
+        <button @click="clear" class="btn-secondary">Tyhjenn√§</button>
       </div>
 
       <div v-if="message" :class="['message', messageType]">
@@ -81,7 +81,7 @@ function save(): void {
 }
 
 function clear(): void {
-  if (confirm('Haluatko varmasti tyhjent‰‰ kaikki asetukset?')) {
+  if (confirm('Haluatko varmasti tyhjent√§√§ kaikki asetukset?')) {
     settingsStore.clearSettings()
     apiUrl.value = settingsStore.apiBaseUrl
     usernameInput.value = ''

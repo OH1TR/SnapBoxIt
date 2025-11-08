@@ -1,39 +1,39 @@
-<template>
+ï»¿<template>
   <div class="main-page">
     <div class="header">
       <h1>SnapBox</h1>
-      <p>Järjestelmä komponenttien hallintaan</p>
+      <p>JÃ¤rjestelmÃ¤ komponenttien hallintaan</p>
     </div>
 
     <div class="menu-grid">
       <button @click="navigateTo('/upload')" class="menu-button upload">
-        <div class="icon">??</div>
+        <div class="icon">ğŸ“·</div>
         <h3>Lataa kuva</h3>
-        <p>Ota kuva ja lataa se järjestelmään</p>
+        <p>Ota kuva ja lataa se jÃ¤rjestelmÃ¤Ã¤n</p>
       </button>
 
       <button @click="navigateTo('/search')" class="menu-button search">
-        <div class="icon">??</div>
+        <div class="icon">ğŸ”</div>
         <h3>Hae</h3>
-        <p>Etsi komponentteja järjestelmästä</p>
+        <p>Etsi komponentteja jÃ¤rjestelmÃ¤stÃ¤</p>
       </button>
 
       <button @click="navigateTo('/boxes')" class="menu-button boxes">
-        <div class="icon">??</div>
+        <div class="icon">ğŸ“¦</div>
         <h3>Laatikot</h3>
-        <p>Selaa laatikoiden sisältöä</p>
+        <p>Selaa laatikoiden sisÃ¤ltÃ¶Ã¤</p>
       </button>
 
       <button @click="navigateTo('/print')" class="menu-button print">
-        <div class="icon">???</div>
+        <div class="icon">ğŸ–¨ï¸</div>
         <h3>Tulosta</h3>
         <p>Tulosta tarra tai QR-koodi</p>
       </button>
 
       <button @click="navigateTo('/settings')" class="menu-button settings">
-        <div class="icon">??</div>
+        <div class="icon">âš™ï¸</div>
         <h3>Asetukset</h3>
-        <p>Määritä API-asetukset</p>
+        <p>MÃ¤Ã¤ritÃ¤ API-asetukset</p>
       </button>
     </div>
   </div>

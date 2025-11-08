@@ -1,4 +1,4 @@
-<template>
+Ôªø<template>
   <div class="print-page">
     <div class="header">
       <button @click="goBack" class="back-button">? Takaisin</button>
@@ -35,7 +35,7 @@
             v-model="printText"
             rows="6"
             class="textarea-field"
-            placeholder="Kirjoita t‰h‰n tulostettava teksti..."
+            placeholder="Kirjoita t√§h√§n tulostettava teksti..."
           ></textarea>
         </div>
 
@@ -77,7 +77,7 @@ function goBack(): void {
 
 async function print(): Promise<void> {
   if (!printText.value.trim()) {
-    error.value = 'Syˆt‰ tulostettava teksti'
+    error.value = 'Sy√∂t√§ tulostettava teksti'
     return
   }
 
@@ -89,7 +89,7 @@ async function print(): Promise<void> {
     const result = await apiService.printLabel(printType.value, printText.value)
     
     if (result) {
-      success.value = 'Tulostepyyntˆ l‰hetetty onnistuneesti!'
+      success.value = 'Tulostepyynt√∂ l√§hetetty onnistuneesti!'
       printText.value = ''
       
       // Clear success message after 3 seconds
@@ -97,7 +97,7 @@ async function print(): Promise<void> {
         success.value = ''
       }, 3000)
     } else {
-      error.value = 'Tulostepyynnˆn l‰hetys ep‰onnistui'
+      error.value = 'Tulostepyynn√∂n l√§hetys ep√§onnistui'
     }
   } catch (err) {
     error.value = `Virhe tulostuksessa: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="voice-assistant-page">
     <div class="page-header">
       <h1>AI Voice Assistant</h1>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div id="app">
     <!-- App Header with voice controls -->
     <AppHeader 

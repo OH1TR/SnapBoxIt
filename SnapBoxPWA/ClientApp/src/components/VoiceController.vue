@@ -1,4 +1,4 @@
-<template>
+Ôªø<template>
   <!-- Invisible component - no UI, only voice functionality -->
   <div v-if="false"></div>
 </template>
@@ -57,10 +57,10 @@ async function connect() {
     isConnected.value = true
     emit('update:connected', true)
     
-    addMessage('system', 'ƒ‰niohjaus aktivoitu. Voit nyt puhua sovelluksen kanssa!')
+    addMessage('system', '√Ñ√§niohjaus aktivoitu. Voit nyt puhua sovelluksen kanssa!')
     
   } catch (err: any) {
-    emit('error', err.message || 'Yhteyden muodostaminen ep‰onnistui')
+    emit('error', err.message || 'Yhteyden muodostaminen ep√§onnistui')
     console.error('Connection error:', err)
     isConnected.value = false
     emit('update:connected', false)
@@ -142,21 +142,21 @@ function handleNavigation(event: NavigationEvent) {
   
   if (event.route === '/search' && event.params?.query) {
     // Navigate to search page with query
-    addMessage('system', `?? Siirryt‰‰n hakun‰kym‰‰n hakusanalla: "${event.params.query}"`)
+    addMessage('system', `?? Siirryt√§√§n hakun√§kym√§√§n hakusanalla: "${event.params.query}"`)
     props.router.push({
       path: '/search',
       query: { q: event.params.query }
     })
   } else if (event.route === '/boxes' && event.params?.boxId) {
     // Navigate to box view with selected box
-    addMessage('system', `?? Siirryt‰‰n laatikkon‰kym‰‰n: ${event.params.boxId}`)
+    addMessage('system', `?? Siirryt√§√§n laatikkon√§kym√§√§n: ${event.params.boxId}`)
     props.router.push({
       path: '/boxes',
       query: { box: event.params.boxId }
     })
   } else if (event.route === '/upload') {
     // Navigate to upload page
-    addMessage('system', '?? Siirryt‰‰n lataussivulle')
+    addMessage('system', '?? Siirryt√§√§n lataussivulle')
     const query: any = {}
     if (event.params?.boxId) {
       query.box = event.params.boxId
@@ -170,7 +170,7 @@ function handleNavigation(event: NavigationEvent) {
     })
   } else {
     // Generic navigation
-    addMessage('system', `?? Siirryt‰‰n sivulle: ${event.route}`)
+    addMessage('system', `?? Siirryt√§√§n sivulle: ${event.route}`)
     props.router.push(event.route)
   }
   
@@ -190,7 +190,7 @@ function handleCameraControl(event: CameraControlEvent) {
       addMessage('system', `?? Otetaan kuva laatikkoon: ${selectedBoxId.value}`)
       emit('camera', { ...event, boxId: selectedBoxId.value })
     } else {
-      addMessage('system', '?? Laatikko pit‰‰ valita ensin ennen kuvan ottamista!')
+      addMessage('system', '?? Laatikko pit√§√§ valita ensin ennen kuvan ottamista!')
       emit('error', 'Valitse laatikko ensin')
     }
   }
@@ -214,7 +214,7 @@ function handleBoxSelection(event: BoxSelectionEvent) {
 
 function handleReject() {
   console.log('Handling reject command')
-  addMessage('system', '??? Hyl‰t‰‰n kohde...')
+  addMessage('system', '??? Hyl√§t√§√§n kohde...')
   emit('reject')
 }
 
@@ -222,7 +222,7 @@ function disconnect() {
   realtimeService.disconnect()
   isConnected.value = false
   emit('update:connected', false)
-  addMessage('system', 'ƒ‰niohjaus sammutettu')
+  addMessage('system', '√Ñ√§niohjaus sammutettu')
   selectedBoxId.value = ''
 }
 

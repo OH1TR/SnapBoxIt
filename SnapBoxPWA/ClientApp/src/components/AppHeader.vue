@@ -1,4 +1,4 @@
-<template>
+ï»¿<template>
   <header class="app-header">
     <div class="header-content">
       <h1 class="app-title">SnapBox PWA</h1>
@@ -12,7 +12,7 @@
           :class="{ active: showHistory }"
           title="Keskusteluhistoria"
         >
-          ??
+          ğŸ’¬
         </button>
         
         <!-- Voice Control Button -->
@@ -20,11 +20,11 @@
           @click="handleToggleVoice" 
           class="header-btn voice-btn"
           :class="{ active: isVoiceActive, connected: isConnected }"
-          :title="isVoiceActive ? 'Sammuta ääniohjaus' : 'Aktivoi ääniohjaus'"
+          :title="isVoiceActive ? 'Sammuta Ã¤Ã¤niohjaus' : 'Aktivoi Ã¤Ã¤niohjaus'"
         >
-          <span v-if="!isVoiceActive">??</span>
-          <span v-else-if="isConnected">???</span>
-          <span v-else>?</span>
+          <span v-if="!isVoiceActive">ğŸ¤</span>
+          <span v-else-if="isConnected">ğŸ”Š</span>
+          <span v-else>â¸</span>
         </button>
       </div>
     </div>
@@ -34,7 +34,7 @@
       <div v-if="showHistory && isVoiceActive" class="history-panel">
         <div class="history-header">
           <h3>Keskusteluhistoria</h3>
-          <button @click="showHistory = false" class="close-history-btn">×</button>
+          <button @click="showHistory = false" class="close-history-btn">Ã—</button>
         </div>
         <div class="history-content">
           <div
@@ -48,7 +48,7 @@
             <div class="history-message-time">{{ getFormattedTime(message.timestamp) }}</div>
           </div>
           <div v-if="messages.length === 0" class="no-messages">
-            Ei viestejä vielä
+            Ei viestejÃ¤ vielÃ¤
           </div>
         </div>
       </div>

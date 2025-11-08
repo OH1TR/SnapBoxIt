@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <div class="voice-chat-container">
     <div class="voice-chat-header">
       <h2>AI Voice Assistant</h2>
-      <button @click="closeChat" class="close-btn">�</button>
+      <button @click="closeChat" class="close-btn">×</button>
     </div>
 
     <div class="voice-chat-content">

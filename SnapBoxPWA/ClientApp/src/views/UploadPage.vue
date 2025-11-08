@@ -1,7 +1,7 @@
-<template>
+Ôªø<template>
   <div class="upload-page">
     <div class="header">
-      <button @click="goBack" class="back-button">? Takaisin</button>
+      <button @click="goBack" class="back-button">‚Üê Takaisin</button>
       <h1>Lataa kuva</h1>
     </div>
 
@@ -21,9 +21,9 @@
         <div class="camera-section">
           <!-- Camera compatibility warning -->
           <div v-if="!isCameraSupported" class="warning-message">
-            <p><strong>Kamera ei ole k‰ytett‰viss‰</strong></p>
-            <p v-if="!isSecureContext">Kamera vaatii HTTPS-yhteyden. K‰yt‰ osoitetta https://localhost tai palvelinta HTTPS:ll‰.</p>
-            <p v-else>Selaimesi ei tue kameran k‰yttˆ‰ tai kameraa ei lˆydy.</p>
+            <p><strong>Kamera ei ole k√§ytett√§viss√§</strong></p>
+            <p v-if="!isSecureContext">Kamera vaatii HTTPS-yhteyden. K√§yt√§ osoitetta https://localhost tai palvelinta HTTPS:ll√§.</p>
+            <p v-else>Selaimesi ei tue kameran k√§ytt√∂√§ tai kameraa ei l√∂ydy.</p>
           </div>
 
           <div v-if="cameraActive" class="camera-container">
@@ -35,7 +35,7 @@
             ></video>
             <div class="camera-controls">
               <button @click="capturePhoto" class="btn-capture" :disabled="!boxId">
-                ?? Ota kuva
+                üì∑ Ota kuva
               </button>
               <button @click="stopCamera" class="btn-secondary">
                 Sulje kamera
@@ -49,7 +49,7 @@
         <div v-if="previewImage" class="preview-section">
           <img :src="previewImage" alt="Preview" class="preview-image" />
           <button @click="retakePhoto" class="btn-secondary">
-            ?? Ota uusi kuva
+            üîÑ Ota uusi kuva
           </button>
         </div>
       </div>
@@ -73,12 +73,12 @@
         </div>
 
         <div class="detail-group">
-          <label>V‰rit</label>
-          <p>{{ uploadedItem.colors?.join(', ') || 'Ei v‰rej‰' }}</p>
+          <label>V√§rit</label>
+          <p>{{ uploadedItem.colors?.join(', ') || 'Ei v√§rej√§' }}</p>
         </div>
 
         <div class="form-group">
-          <label for="count">M‰‰r‰</label>
+          <label for="count">M√§√§r√§</label>
           <input
             id="count"
             v-model.number="uploadedItem.count"
@@ -95,7 +95,7 @@
             v-model="uploadedItem.userDescription"
             rows="4"
             class="textarea-field"
-            placeholder="Lis‰‰ oma kuvaus..."
+            placeholder="Lis√§√§ oma kuvaus..."
           ></textarea>
         </div>
 
@@ -104,7 +104,7 @@
             {{ saving ? 'Tallennetaan...' : 'Tallenna' }}
           </button>
           <button @click="rejectItem" :disabled="deleting" class="btn-danger">
-            {{ deleting ? 'Hyl‰t‰‰n...' : 'Hylk‰‰' }}
+            {{ deleting ? 'Hyl√§t√§√§n...' : 'Hylk√§√§' }}
           </button>
         </div>
       </div>
@@ -215,12 +215,12 @@ function goBack(): void {
 async function startCamera(): Promise<void> {
   // Additional validation
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    error.value = 'Selaimesi ei tue kameran k‰yttˆ‰. Varmista ett‰ k‰yt‰t HTTPS-yhteytt‰.'
+    error.value = 'Selaimesi ei tue kameran k√§ytt√∂√§. Varmista ett√§ k√§yt√§t HTTPS-yhteytt√§.'
     return
   }
 
   if (!window.isSecureContext) {
-    error.value = 'Kamera vaatii turvallisen yhteyden (HTTPS). K‰yt‰ osoitetta https://localhost tai palvelinta HTTPS:ll‰.'
+    error.value = 'Kamera vaatii turvallisen yhteyden (HTTPS). K√§yt√§ osoitetta https://localhost tai palvelinta HTTPS:ll√§.'
     return
   }
 
@@ -251,7 +251,7 @@ async function startCamera(): Promise<void> {
         // This is often fine - the video will autoplay anyway
       }
     } else {
-      error.value = 'Kameran alustus ep‰onnistui'
+      error.value = 'Kameran alustus ep√§onnistui'
       stopCamera()
     }
   } catch (err) {
@@ -260,20 +260,20 @@ async function startCamera(): Promise<void> {
     // Provide more specific error messages
     if (err instanceof Error) {
       if (err.name === 'NotAllowedError') {
-        error.value = 'Kameran k‰yttˆ estetty. Anna selaimelle lupa k‰ytt‰‰ kameraa.'
+        error.value = 'Kameran k√§ytt√∂ estetty. Anna selaimelle lupa k√§ytt√§√§ kameraa.'
       } else if (err.name === 'NotFoundError') {
-        error.value = 'Kameraa ei lˆytynyt. Varmista ett‰ laitteessasi on kamera.'
+        error.value = 'Kameraa ei l√∂ytynyt. Varmista ett√§ laitteessasi on kamera.'
       } else if (err.name === 'NotReadableError') {
-        error.value = 'Kamera on jo k‰ytˆss‰ toisessa sovelluksessa.'
+        error.value = 'Kamera on jo k√§yt√∂ss√§ toisessa sovelluksessa.'
       } else if (err.name === 'OverconstrainedError') {
-        error.value = 'Kameran asetukset eiv‰t ole tuettuja.'
+        error.value = 'Kameran asetukset eiv√§t ole tuettuja.'
       } else if (err.name === 'SecurityError') {
-        error.value = 'Kamera vaatii HTTPS-yhteyden. K‰yt‰ osoitetta https://localhost tai palvelinta HTTPS:ll‰.'
+        error.value = 'Kamera vaatii HTTPS-yhteyden. K√§yt√§ osoitetta https://localhost tai palvelinta HTTPS:ll√§.'
       } else {
-        error.value = `Kameran k‰ynnistys ep‰onnistui: ${err.message}`
+        error.value = `Kameran k√§ynnistys ep√§onnistui: ${err.message}`
       }
     } else {
-      error.value = 'Kameran k‰ynnistys ep‰onnistui'
+      error.value = 'Kameran k√§ynnistys ep√§onnistui'
     }
     cameraActive.value = false
   }
@@ -289,7 +289,7 @@ function stopCamera(): void {
 
 async function capturePhoto(): Promise<void> {
   if (!boxId.value) {
-    error.value = 'Syˆt‰ laatikon tunnus ennen kuvan ottamista'
+    error.value = 'Sy√∂t√§ laatikon tunnus ennen kuvan ottamista'
     return
   }
 
@@ -311,7 +311,7 @@ async function capturePhoto(): Promise<void> {
   // Convert canvas to blob
   canvas.toBlob(async (blob) => {
     if (!blob) {
-      error.value = 'Kuvan tallentaminen ep‰onnistui'
+      error.value = 'Kuvan tallentaminen ep√§onnistui'
       return
     }
     
@@ -335,7 +335,7 @@ function retakePhoto(): void {
 
 async function uploadImage(blob: Blob): Promise<void> {
   if (!boxId.value) {
-    error.value = 'Syˆt‰ laatikon tunnus'
+    error.value = 'Sy√∂t√§ laatikon tunnus'
     return
   }
 
@@ -349,7 +349,7 @@ async function uploadImage(blob: Blob): Promise<void> {
     const result = await apiService.uploadImage(file, boxId.value)
     uploadedItem.value = result
   } catch (err) {
-    error.value = `Lataus ep‰onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    error.value = `Lataus ep√§onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
     console.error('Upload error:', err)
   } finally {
     uploading.value = false
@@ -369,10 +369,10 @@ async function saveItem(): Promise<void> {
       resetForm()
       router.back()
     } else {
-      error.value = 'Tallentaminen ep‰onnistui'
+      error.value = 'Tallentaminen ep√§onnistui'
     }
   } catch (err) {
-    error.value = `Tallentaminen ep‰onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    error.value = `Tallentaminen ep√§onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
     console.error('Save error:', err)
   } finally {
     saving.value = false
@@ -391,10 +391,10 @@ async function rejectItem(): Promise<void> {
     if (success) {
       resetForm()
     } else {
-      error.value = 'Hyl‰t‰‰n ep‰onnistui'
+      error.value = 'Hyl√§t√§√§n ep√§onnistui'
     }
   } catch (err) {
-    error.value = `Hylk‰‰minen ep‰onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    error.value = `Hylk√§√§minen ep√§onnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
     console.error('Delete error:', err)
   } finally {
     deleting.value = false

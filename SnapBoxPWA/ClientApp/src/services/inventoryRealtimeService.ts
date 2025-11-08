@@ -1,4 +1,4 @@
-/**
+Ôªø/**
  * Inventory Realtime Service with Function Calling
  * 
  * Extends the base RealtimeService to add inventory-specific
@@ -447,12 +447,12 @@ export class InventoryRealtimeService extends RealtimeService {
       if (success) {
         this.sendFunctionResult(this.currentCallId!, {
           success: true,
-          message: `Laatikkotarra "${text}" l‰hetetty tulostimelle`
+          message: `Laatikkotarra "${text}" l√§hetetty tulostimelle`
         })
       } else {
         this.sendFunctionResult(this.currentCallId!, {
           success: false,
-          error: 'Tarran tulostus ep‰onnistui'
+          error: 'Tarran tulostus ep√§onnistui'
         })
       }
     } catch (error: any) {
@@ -477,12 +477,12 @@ export class InventoryRealtimeService extends RealtimeService {
       if (success) {
         this.sendFunctionResult(this.currentCallId!, {
           success: true,
-          message: `Vapaamuotoinen tarra l‰hetetty tulostimelle`
+          message: `Vapaamuotoinen tarra l√§hetetty tulostimelle`
         })
       } else {
         this.sendFunctionResult(this.currentCallId!, {
           success: false,
-          error: 'Tarran tulostus ep‰onnistui'
+          error: 'Tarran tulostus ep√§onnistui'
         })
       }
     } catch (error: any) {
@@ -511,7 +511,7 @@ export class InventoryRealtimeService extends RealtimeService {
     this.sendEvent(event)
     
     // Trigger response to continue the conversation
-    this.sendEvent({ type: 'response.create' })
+    this.sendEvent({ type: 'response.create' });
   }
 
   /**
@@ -523,45 +523,45 @@ export class InventoryRealtimeService extends RealtimeService {
     
     // First create session with function definitions
     await this.createSession({
-      instructions: `Olet tekˆ‰lyavustaja SnapBox-varastoj‰rjestelm‰lle.
-Voit auttaa k‰ytt‰ji‰:
-- Etsim‰‰n tavaroita varastosta
-- N‰ytt‰m‰‰n laatikon sis‰llˆn
-- N‰ytt‰m‰‰n kaikki laatikot
-- Lis‰‰m‰‰n uusia kohteita
+      instructions: `Olet tek√∂√§lyavustaja SnapBox-varastoj√§rjestelm√§lle.
+Voit auttaa k√§ytt√§ji√§:
+- Etsim√§√§n tavaroita varastosta
+- N√§ytt√§m√§√§n laatikon sis√§ll√∂n
+- N√§ytt√§m√§√§n kaikki laatikot
+- Lis√§√§m√§√§n uusia kohteita
 - Ottamaan kuvia
 - Valitsemaan laatikoita
-- P‰ivitt‰m‰‰n tietojen tietoja
+- P√§ivitt√§m√§√§n tietojen tietoja
 - Poistamaan tavaroita
-- Hylk‰‰m‰‰n kohteita
+- Hylk√§√§m√§√§n kohteita
 - Tulostamaan tarroja
 
-TƒRKEƒƒ - NAVIGOINTI:
-- Kun k‰ytt‰j‰ kysyy "miss‰ on X" tai "etsi X", k‰yt‰ ENSIN search_items-funktiota lˆyt‰‰ksesi tavaran.
-  SITTEN k‰yt‰ navigate_to_search-funktiota n‰kˆ‰ksesi tulokset hakun‰kym‰ss‰.
-- Kun k‰ytt‰j‰ kysyy "n‰yt‰ laatikko X" tai "mit‰ laatikossa X on", k‰yt‰ navigate_to_box_view-funktiota.
-- Kun k‰ytt‰j‰ sanoo "etsi" tai "hae", navigoi hakun‰kym‰‰n k‰ytt‰m‰ll‰ navigate_to_search-funktiota.
+T√ÑRKE√Ñ√Ñ - NAVIGOINTI:
+- Kun k√§ytt√§j√§ kysyy "miss√§ on X" tai "etsi X", k√§yt√§ ENSIN search_items-funktiota l√∂yt√§√§ksesi tavaran.
+  SITTEN k√§yt√§ navigate_to_search-funktiota n√§k√∂√§ksesi tulokset hakun√§kym√§ss√§.
+- Kun k√§ytt√§j√§ kysyy "n√§yt√§ laatikko X" tai "mit√§ laatikossa X on", k√§yt√§ navigate_to_box_view-funktiota.
+- Kun k√§ytt√§j√§ sanoo "etsi" tai "hae", navigoi hakun√§kym√§√§n k√§ytt√§m√§ll√§ navigate_to_search-funktiota.
 
-TƒRKEƒƒ - KUVAAMINEN:
-- Kun k‰ytt‰j‰ sanoo "lis‰‰ uusi", "uusi kohde", "lis‰‰ kuva" tai "lataa kuva", k‰yt‰ navigate_to_upload-funktiota.
-- Kun k‰ytt‰j‰ sanoo "ota kuva":
-  * Jos boxId on tiedossa, k‰yt‰ capture_photo-funktiota.
-  * Jos boxId ei ole tiedossa, kerro ett‰ laatikko pit‰‰ valita ensin ja k‰yt‰ select_box-funktiota.
-- Kun k‰ytt‰j‰ sanoo "valitse laatikko X" tai "vaihda laatikko X", k‰yt‰ select_box-funktiota.
-- select_box-funktiota voi k‰ytt‰‰ AINA kun k‰ytt‰j‰ haluaa vaihtaa laatikkoa, vaikka laatikko olisi jo valittu.
+T√ÑRKE√Ñ√Ñ - KUVAAMINEN:
+- Kun k√§ytt√§j√§ sanoo "lis√§√§ uusi", "uusi kohde", "lis√§√§ kuva" tai "lataa kuva", k√§yt√§ navigate_to_upload-funktiota.
+- Kun k√§ytt√§j√§ sanoo "ota kuva":
+  * Jos boxId on tiedossa, k√§yt√§ capture_photo-funktiota.
+  * Jos boxId ei ole tiedossa, kerro ett√§ laatikko pit√§√§ valita ensin ja k√§yt√§ select_box-funktiota.
+- Kun k√§ytt√§j√§ sanoo "valitse laatikko X" tai "vaihda laatikko X", k√§yt√§ select_box-funktiota.
+- select_box-funktiota voi k√§ytt√§√§ AINA kun k√§ytt√§j√§ haluaa vaihtaa laatikkoa, vaikka laatikko olisi jo valittu.
 
-TƒRKEƒƒ - HYLKƒƒMINEN:
-- Kun k‰ytt‰j‰ sanoo "hylk‰‰", "peruuta", "poista", "en halua", "ei kelpaa" tai vastaavaa, k‰yt‰ reject_current_item-funktiota.
-- VARMISTA AINA k‰ytt‰j‰lt‰ ennen hylk‰‰mist‰: "Haluatko varmasti hyl‰t‰ t‰m‰n kohteen?"
-- Funktio toimii vain jos k‰ytt‰j‰ll‰ on auki kohde (esim. UploadPage).
+T√ÑRKE√Ñ√Ñ - HYLK√Ñ√ÑMINEN:
+- Kun k√§ytt√§j√§ sanoo "hylk√§√§", "peruuta", "poista", "en halua", "ei kelpaa" tai vastaavaa, k√§yt√§ reject_current_item-funktiota.
+- VARMISTA AINA k√§ytt√§j√§lt√§ ennen hylk√§√§mist√§: "Haluatko varmasti hyl√§t√§ t√§m√§n kohteen?"
+- Funktio toimii vain jos k√§ytt√§j√§ll√§ on auki kohde (esim. UploadPage).
 
-TƒRKEƒƒ - TARROJEN TULOSTUS:
-- Kun k‰ytt‰j‰ sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X", k‰yt‰ print_qr_label-funktiota tekstill‰ X.
-- Kun k‰ytt‰j‰ sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra", kysy k‰ytt‰j‰lt‰ teksti‰ ja k‰yt‰ print_text_label-funktiota.
-- Laatikkotarra (qrlabel) sis‰lt‰‰ QR-koodin ja tekstin.
-- Vapaamuotoinen tarra (label) sis‰lt‰‰ vain tekstin, ja se voi olla useampirivisesti.
+T√ÑRKE√Ñ√Ñ - TARROJEN TULOSTUS:
+- Kun k√§ytt√§j√§ sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X", k√§yt√§ print_qr_label-funktiota tekstill√§ X.
+- Kun k√§ytt√§j√§ sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra", kysy k√§ytt√§j√§lt√§ teksti√§ ja k√§yt√§ print_text_label-funktiota.
+- Laatikkotarra (qrlabel) sis√§lt√§√§ QR-koodin ja tekstin.
+- Vapaamuotoinen tarra (label) sis√§lt√§√§ vain tekstin, ja se voi olla useampirivisesti.
 
-Pid‰ vastauksesi lyhyin‰ ja keskustelunomaisina, koska t‰m‰ on puhek‰yttˆliittym‰.
+Pid√§ vastauksesi lyhyin√§ ja keskustelunomaisina, koska t√§m√§ on puhek√§ytt√∂liittym√§.
 Vastaa aina suomeksi.`,
       tools: INVENTORY_FUNCTIONS
     })
@@ -600,17 +600,17 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'search_items',
-    description: 'Etsi tavaroita varastosta hakusanalla. K‰yt‰ t‰t‰ kun k‰ytt‰j‰ haluaa lˆyt‰‰, etsi‰ tai paikantaa tavaroita.',
+    description: 'Etsi tavaroita varastosta hakusanalla. K√§yt√§ t√§t√§ kun k√§ytt√§j√§ haluaa l√∂yt√§√§, etsi√§ tai paikantaa tavaroita.',
     parameters: {
       type: 'object',
       properties: {
         query: {
           type: 'string',
-          description: 'Hakusana tavaroiden etsimiseen (esim. "ruuvimeisseli", "kaapelit", "keittiˆtavarat")'
+          description: 'Hakusana tavaroiden etsimiseen (esim. "ruuvimeisseli", "kaapelit", "keitti√∂tavarat")'
         },
         count: {
           type: 'number',
-          description: 'Maksimim‰‰r‰ tuloksia (oletus: 10)',
+          description: 'Maksimim√§√§r√§ tuloksia (oletus: 10)',
           default: 10
         }
       },
@@ -620,13 +620,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'get_box_contents',
-    description: 'Hae kaikki tietyss‰ laatikossa olevat tavarat. K‰yt‰ t‰t‰ kun k‰ytt‰j‰ kysyy mit‰ tietyss‰ laatikossa on.',
+    description: 'Hae kaikki tietyss√§ laatikossa olevat tavarat. K√§yt√§ t√§t√§ kun k√§ytt√§j√§ kysyy mit√§ tietyss√§ laatikossa on.',
     parameters: {
       type: 'object',
       properties: {
         boxId: {
           type: 'string',
-          description: 'Laatikon tunniste, jonka sis‰ltˆ haetaan (esim. "BOX-001")'
+          description: 'Laatikon tunniste, jonka sis√§lt√∂ haetaan (esim. "BOX-001")'
         }
       },
       required: ['boxId']
@@ -635,7 +635,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'get_all_boxes',
-    description: 'Hae lista kaikista laatikoista varastossa. K‰yt‰ t‰t‰ kun k‰ytt‰j‰ kysyy kaikista laatikoista tai haluaa n‰hd‰ mit‰ laatikoita on olemassa.',
+    description: 'Hae lista kaikista laatikoista varastossa. K√§yt√§ t√§t√§ kun k√§ytt√§j√§ kysyy kaikista laatikoista tai haluaa n√§hd√§ mit√§ laatikoita on olemassa.',
     parameters: {
       type: 'object',
       properties: {}
@@ -644,13 +644,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'navigate_to_search',
-    description: 'Navigoi hakun‰kym‰‰n ja n‰yt‰ hakutulokset siell‰. K‰yt‰ AINA kun k‰ytt‰j‰ kysyy tavaran sijaintia tai haluaa etsi‰ jotain. Kutsu t‰t‰ SEARCH_ITEMS-funktion JƒLKEEN n‰ytt‰‰ksesi tulokset k‰ytt‰j‰lle.',
+    description: 'Navigoi hakun√§kym√§√§n ja n√§yt√§ hakutulokset siell√§. K√§yt√§ AINA kun k√§ytt√§j√§ kysyy tavaran sijaintia tai haluaa etsi√§ jotain. Kutsu t√§t√§ SEARCH_ITEMS-funktion J√ÑLKEEN n√§ytt√§√§ksesi tulokset k√§ytt√§j√§lle.',
     parameters: {
       type: 'object',
       properties: {
         query: {
           type: 'string',
-          description: 'Hakusana, joka n‰ytet‰‰n hakun‰kym‰ss‰'
+          description: 'Hakusana, joka n√§ytet√§√§n hakun√§kym√§ss√§'
         }
       },
       required: ['query']
@@ -659,7 +659,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'navigate_to_box_view',
-    description: 'Navigoi laatikkon‰kym‰‰n ja n‰yt‰ tietyn laatikon sis‰ltˆ. K‰yt‰ kun k‰ytt‰j‰ haluaa n‰hd‰ mit‰ tietyss‰ laatikossa on.',
+    description: 'Navigoi laatikkon√§kym√§√§n ja n√§yt√§ tietyn laatikon sis√§lt√∂. K√§yt√§ kun k√§ytt√§j√§ haluaa n√§hd√§ mit√§ tietyss√§ laatikossa on.',
     parameters: {
       type: 'object',
       properties: {
@@ -674,13 +674,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'navigate_to_upload',
-    description: 'Navigoi lataussivulle uuden kohteen lis‰‰miseksi. K‰yt‰ kun k‰ytt‰j‰ sanoo "lis‰‰ uusi", "uusi kohde", "lis‰‰ kuva", "lataa kuva" tai haluaa lis‰t‰ jotain varastoon.',
+    description: 'Navigoi lataussivulle uuden kohteen lis√§√§miseksi. K√§yt√§ kun k√§ytt√§j√§ sanoo "lis√§√§ uusi", "uusi kohde", "lis√§√§ kuva", "lataa kuva" tai haluaa lis√§t√§ jotain varastoon.',
     parameters: {
       type: 'object',
       properties: {
         boxId: {
           type: 'string',
-          description: 'Valinnaisesti laatikon tunniste, johon kohde lis‰t‰‰n'
+          description: 'Valinnaisesti laatikon tunniste, johon kohde lis√§t√§√§n'
         }
       }
     }
@@ -688,13 +688,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'capture_photo',
-    description: 'Ota kuva kameralla. TƒRKEƒƒ: Tarkista ENSIN ett‰ boxId on tiedossa. Jos ei ole, pyyd‰ k‰ytt‰j‰‰ valitsemaan laatikko ensin k‰ytt‰m‰ll‰ select_box-funktiota.',
+    description: 'Ota kuva kameralla. T√ÑRKE√Ñ√Ñ: Tarkista ENSIN ett√§ boxId on tiedossa. Jos ei ole, pyyd√§ k√§ytt√§j√§√§ valitsemaan laatikko ensin k√§ytt√§m√§ll√§ select_box-funktiota.',
     parameters: {
       type: 'object',
       properties: {
         boxId: {
           type: 'string',
-          description: 'Laatikon tunniste, johon kuva liitet‰‰n. PAKOLLINEN ennen kuvan ottamista.'
+          description: 'Laatikon tunniste, johon kuva liitet√§√§n. PAKOLLINEN ennen kuvan ottamista.'
         }
       }
     }
@@ -702,7 +702,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'select_box',
-    description: 'Valitse tai vaihda laatikko. K‰yt‰ kun k‰ytt‰j‰ sanoo "valitse laatikko X", "vaihda laatikko X" tai haluaa vaihtaa aktiivista laatikkoa. Toimii aina, vaikka laatikko olisi jo valittuna.',
+    description: 'Valitse tai vaihda laatikko. K√§yt√§ kun k√§ytt√§j√§ sanoo "valitse laatikko X", "vaihda laatikko X" tai haluaa vaihtaa aktiivista laatikkoa. Toimii aina, vaikka laatikko olisi jo valittuna.',
     parameters: {
       type: 'object',
       properties: {
@@ -717,7 +717,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'reject_current_item',
-    description: 'Hylk‰‰ nykyinen kohde (esim. juuri otettu kuva tai avattu kohde). K‰yt‰ kun k‰ytt‰j‰ sanoo "hylk‰‰", "peruuta", "poista t‰m‰", "en halua", "ei kelpaa" tai vastaavaa. HUOM: Varmista aina k‰ytt‰j‰lt‰ ennen hylk‰‰mist‰.',
+    description: 'Hylk√§√§ nykyinen kohde (esim. juuri otettu kuva tai avattu kohde). K√§yt√§ kun k√§ytt√§j√§ sanoo "hylk√§√§", "peruuta", "poista t√§m√§", "en halua", "ei kelpaa" tai vastaavaa. HUOM: Varmista aina k√§ytt√§j√§lt√§ ennen hylk√§√§mist√§.',
     parameters: {
       type: 'object',
       properties: {}
@@ -726,7 +726,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'save_item',
-    description: 'Tallenna tai p‰ivit‰ tavaran tiedot varastoon. K‰yt‰ t‰t‰ kun k‰ytt‰j‰ haluaa muuttaa tavaran tietoja.',
+    description: 'Tallenna tai p√§ivit√§ tavaran tiedot varastoon. K√§yt√§ t√§t√§ kun k√§ytt√§j√§ haluaa muuttaa tavaran tietoja.',
     parameters: {
       type: 'object',
       properties: {
@@ -757,7 +757,7 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'delete_item',
-    description: 'Poista tavara varastosta. Varmista AINA k‰ytt‰j‰lt‰ ennen t‰m‰n funktion kutsumista.',
+    description: 'Poista tavara varastosta. Varmista AINA k√§ytt√§j√§lt√§ ennen t√§m√§n funktion kutsumista.',
     parameters: {
       type: 'object',
       properties: {
@@ -772,13 +772,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'print_qr_label',
-    description: 'Tulosta laatikkotarra QR-koodilla. K‰yt‰ kun k‰ytt‰j‰ sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X". Tarra sis‰lt‰‰ QR-koodin ja tekstin.',
+    description: 'Tulosta laatikkotarra QR-koodilla. K√§yt√§ kun k√§ytt√§j√§ sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X". Tarra sis√§lt√§√§ QR-koodin ja tekstin.',
     parameters: {
       type: 'object',
       properties: {
         text: {
           type: 'string',
-          description: 'Tekstisis‰ltˆ joka tulostetaan tarraan ja QR-koodiin (esim. "BOX-001")'
+          description: 'Tekstisis√§lt√∂ joka tulostetaan tarraan ja QR-koodiin (esim. "BOX-001")'
         }
       },
       required: ['text']
@@ -787,13 +787,13 @@ export const INVENTORY_FUNCTIONS = [
   {
     type: 'function',
     name: 'print_text_label',
-    description: 'Tulosta vapaamuotoinen tekstilabel ilman QR-koodia. K‰yt‰ kun k‰ytt‰j‰ sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra". Tekstin voi olla useampirivisesti k‰ytt‰m‰ll‰ \\n-merkki‰.',
+    description: 'Tulosta vapaamuotoinen tekstilabel ilman QR-koodia. K√§yt√§ kun k√§ytt√§j√§ sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra". Tekstin voi olla useampirivisesti k√§ytt√§m√§ll√§ \\n-merkki√§.',
     parameters: {
       type: 'object',
       properties: {
         text: {
           type: 'string',
-          description: 'Tekstisis‰ltˆ joka tulostetaan tarraan. Voi sis‰lt‰‰ rivinvaihtoja (\\n).'
+          description: 'Tekstisis√§lt√∂ joka tulostetaan tarraan. Voi sis√§lt√§√§ rivinvaihtoja (\\n).'
         }
       },
       required: ['text']
@@ -802,3 +802,4 @@ export const INVENTORY_FUNCTIONS = [
 ]
 
 export default new InventoryRealtimeService()
+
