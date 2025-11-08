@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl';
-import path from 'path';
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/SnapBoxPWA/',  // IMPORTANT: Must match IIS application path and router base
+  base: '/SnapBoxPWA/',  // IMPORTANT: Must match IIS application path and router base
   plugins: [
     basicSsl(),  // Add basic SSL plugin for HTTPS support
     vue(),
@@ -83,4 +83,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './ClientApp/src')
     }
   }
-});
+})

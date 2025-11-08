@@ -59,51 +59,51 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../services/apiService';
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import apiService from '../services/apiService'
 
-const router = useRouter();
-const printType = ref('qrlabel');
-const printText = ref('');
-const printing = ref(false);
-const success = ref('');
-const error = ref('');
+const router = useRouter()
+const printType = ref<'label' | 'qrlabel'>('qrlabel')
+const printText = ref<string>('')
+const printing = ref<boolean>(false)
+const success = ref<string>('')
+const error = ref<string>('')
 
-function goBack() {
-  router.back();
+function goBack(): void {
+  router.back()
 }
 
-async function print() {
+async function print(): Promise<void> {
   if (!printText.value.trim()) {
-    error.value = 'Syötä tulostettava teksti';
-    return;
+    error.value = 'Syötä tulostettava teksti'
+    return
   }
 
   try {
-    printing.value = true;
-    error.value = '';
-    success.value = '';
+    printing.value = true
+    error.value = ''
+    success.value = ''
 
-    const result = await apiService.printLabel(printType.value, printText.value);
+    const result = await apiService.printLabel(printType.value, printText.value)
     
     if (result) {
-      success.value = 'Tulostepyyntö lähetetty onnistuneesti!';
-      printText.value = '';
+      success.value = 'Tulostepyyntö lähetetty onnistuneesti!'
+      printText.value = ''
       
       // Clear success message after 3 seconds
       setTimeout(() => {
-        success.value = '';
-      }, 3000);
+        success.value = ''
+      }, 3000)
     } else {
-      error.value = 'Tulostepyynnön lähetys epäonnistui';
+      error.value = 'Tulostepyynnön lähetys epäonnistui'
     }
   } catch (err) {
-    error.value = `Virhe tulostuksessa: ${err.message}`;
-    console.error('Print error:', err);
+    error.value = `Virhe tulostuksessa: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Print error:', err)
   } finally {
-    printing.value = false;
+    printing.value = false
   }
 }
 </script>

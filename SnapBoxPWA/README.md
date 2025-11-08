@@ -1,6 +1,6 @@
 # SnapBox PWA
 
-SnapBox on progressiivinen web-sovellus (PWA) komponenttien hallintaan. Sovellus on portattu SnapBoxApp MAUI-sovelluksesta Vue.js:llä.
+SnapBox on progressiivinen web-sovellus (PWA) komponenttien hallintaan. Sovellus on portattu SnapBoxApp MAUI-sovelluksesta Vue.js:llä ja **TypeScriptillä**.
 
 ## Ominaisuudet
 
@@ -12,12 +12,15 @@ SnapBox on progressiivinen web-sovellus (PWA) komponenttien hallintaan. Sovellus
 
 ## Teknologiat
 
-- Vue 3 (Composition API)
-- Vue Router - Sivujen välinen navigointi
-- Pinia - Tilanhallintatyökalu
-- Axios - HTTP-asiakaskirjasto
-- Vite - Build-työkalu
-- Vite PWA Plugin - PWA-tuki
+- **Vue 3** (Composition API + TypeScript)
+- **TypeScript** - Tyyppiturvallisuus
+- **Vue Router** - Sivujen välinen navigointi
+- **Pinia** - Tilanhallintatyökalu
+- **Axios** - HTTP-asiakaskirjasto
+- **Vite** - Build-työkalu
+- **Vite PWA Plugin** - PWA-tuki
+
+> **Huom**: Projekti käyttää TypeScriptiä. Katso [TYPESCRIPT_MIGRATION.md](TYPESCRIPT_MIGRATION.md) lisätietoja TypeScript-muunnoksesta.
 
 ## Käyttöönotto
 
@@ -34,6 +37,11 @@ SnapBox on progressiivinen web-sovellus (PWA) komponenttien hallintaan. Sovellus
    ```
 
    Sovellus käynnistyy osoitteessa http://localhost:5173
+
+3. TypeScript-tyyppitarkistus (valinnainen):
+   ```bash
+   npx vue-tsc --noEmit
+   ```
 
 ### Kameran käyttö kehitysympäristössä
 
@@ -95,7 +103,7 @@ Jos haluat testata kameraa mobiililaitteella:
 
 ### Tuotantoversio
 
-1. Rakenna sovellus:
+1. Rakenna sovellus (sisältää TypeScript-tarkistuksen):
    ```bash
    npm run build
    ```
@@ -159,13 +167,16 @@ ClientApp/
 ??? src/
 ?   ??? components/  # Uudelleenkäytettävät komponentit
 ?   ??? views/       # Sivukomponentit
-?   ??? stores/      # Pinia stores
-?   ??? services/    # API-palvelut
-?   ??? router/      # Vue Router -konfiguraatio
+?   ??? stores/      # Pinia stores (TypeScript)
+?   ??? services/    # API-palvelut (TypeScript)
+?   ??? router/      # Vue Router -konfiguraatio (TypeScript)
+?   ??? types/       # TypeScript-tyyppimäärittelyt
 ?   ??? App.vue      # Pääkomponentti
-?   ??? main.js      # Sovelluksen aloituspiste
+?   ??? main.ts      # Sovelluksen aloituspiste (TypeScript)
+?   ??? env.d.ts     # TypeScript-ympäristömäärittelyt
 ?   ??? style.css    # Globaalit tyylit
 ??? index.html       # HTML-pohja
+??? tsconfig.json    # TypeScript-konfiguraatio
 ```
 
 ## PWA-ominaisuudet

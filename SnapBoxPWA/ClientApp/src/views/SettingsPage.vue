@@ -51,51 +51,51 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useSettingsStore } from '../stores/settingsStore';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSettingsStore } from '../stores/settingsStore'
 
-const router = useRouter();
-const settingsStore = useSettingsStore();
+const router = useRouter()
+const settingsStore = useSettingsStore()
 
-const apiUrl = ref('');
-const usernameInput = ref('');
-const passwordInput = ref('');
-const message = ref('');
-const messageType = ref('success');
+const apiUrl = ref<string>('')
+const usernameInput = ref<string>('')
+const passwordInput = ref<string>('')
+const message = ref<string>('')
+const messageType = ref<'success' | 'info'>('success')
 
 onMounted(() => {
-  apiUrl.value = settingsStore.apiBaseUrl;
-  usernameInput.value = settingsStore.username;
-  passwordInput.value = settingsStore.password;
-});
+  apiUrl.value = settingsStore.apiBaseUrl
+  usernameInput.value = settingsStore.username
+  passwordInput.value = settingsStore.password
+})
 
-function save() {
-  settingsStore.saveSettings(apiUrl.value, usernameInput.value, passwordInput.value);
-  message.value = 'Asetukset tallennettu onnistuneesti!';
-  messageType.value = 'success';
+function save(): void {
+  settingsStore.saveSettings(apiUrl.value, usernameInput.value, passwordInput.value)
+  message.value = 'Asetukset tallennettu onnistuneesti!'
+  messageType.value = 'success'
   setTimeout(() => {
-    message.value = '';
-  }, 3000);
+    message.value = ''
+  }, 3000)
 }
 
-function clear() {
+function clear(): void {
   if (confirm('Haluatko varmasti tyhjentää kaikki asetukset?')) {
-    settingsStore.clearSettings();
-    apiUrl.value = settingsStore.apiBaseUrl;
-    usernameInput.value = '';
-    passwordInput.value = '';
-    message.value = 'Asetukset tyhjennetty!';
-    messageType.value = 'info';
+    settingsStore.clearSettings()
+    apiUrl.value = settingsStore.apiBaseUrl
+    usernameInput.value = ''
+    passwordInput.value = ''
+    message.value = 'Asetukset tyhjennetty!'
+    messageType.value = 'info'
     setTimeout(() => {
-      message.value = '';
-    }, 3000);
+      message.value = ''
+    }, 3000)
   }
 }
 
-function goBack() {
-  router.back();
+function goBack(): void {
+  router.back()
 }
 </script>
 

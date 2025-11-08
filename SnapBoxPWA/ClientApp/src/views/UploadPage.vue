@@ -116,256 +116,263 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onBeforeUnmount, onMounted, computed, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../services/apiService';
+<script setup lang="ts">
+import { ref, onBeforeUnmount, onMounted, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import apiService from '../services/apiService'
+import type { ItemDto } from '../types'
 
-const router = useRouter();
-const videoElement = ref(null);
-const canvasElement = ref(null);
-const boxId = ref('');
-const previewImage = ref(null);
-const uploadedItem = ref(null);
-const uploading = ref(false);
-const saving = ref(false);
-const deleting = ref(false);
-const error = ref('');
-const cameraActive = ref(false);
-const isSecureContext = ref(false);
-const hasCameraSupport = ref(false);
-let mediaStream = null;
+const router = useRouter()
+const videoElement = ref<HTMLVideoElement | null>(null)
+const canvasElement = ref<HTMLCanvasElement | null>(null)
+const boxId = ref<string>('')
+const previewImage = ref<string | null>(null)
+const uploadedItem = ref<ItemDto | null>(null)
+const uploading = ref<boolean>(false)
+const saving = ref<boolean>(false)
+const deleting = ref<boolean>(false)
+const error = ref<string>('')
+const cameraActive = ref<boolean>(false)
+const isSecureContext = ref<boolean>(false)
+const hasCameraSupport = ref<boolean>(false)
+let mediaStream: MediaStream | null = null
 
 // Check if camera is supported
 const isCameraSupported = computed(() => {
-  return isSecureContext.value && hasCameraSupport.value;
-});
+  return isSecureContext.value && hasCameraSupport.value
+})
 
 // Check camera support on mount
 onMounted(async () => {
   // Check if we're in a secure context (HTTPS or localhost)
-  isSecureContext.value = window.isSecureContext || false;
+  isSecureContext.value = window.isSecureContext || false
   
   // Check if mediaDevices API is available
-  hasCameraSupport.value = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  hasCameraSupport.value = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
   
   if (!isSecureContext.value) {
-    console.warn('Not in secure context. Camera access requires HTTPS or localhost.');
+    console.warn('Not in secure context. Camera access requires HTTPS or localhost.')
   }
   
   if (!hasCameraSupport.value) {
-    console.warn('getUserMedia API not supported in this browser.');
+    console.warn('getUserMedia API not supported in this browser.')
   }
 
   // Automatically start camera if supported
   if (isCameraSupported.value) {
-    await startCamera();
+    await startCamera()
   }
-});
+})
 
-function goBack() {
-  stopCamera();
-  router.back();
+function goBack(): void {
+  stopCamera()
+  router.back()
 }
 
-async function startCamera() {
+async function startCamera(): Promise<void> {
   // Additional validation
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    error.value = 'Selaimesi ei tue kameran käyttöä. Varmista että käytät HTTPS-yhteyttä.';
-    return;
+    error.value = 'Selaimesi ei tue kameran käyttöä. Varmista että käytät HTTPS-yhteyttä.'
+    return
   }
 
   if (!window.isSecureContext) {
-    error.value = 'Kamera vaatii turvallisen yhteyden (HTTPS). Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.';
-    return;
+    error.value = 'Kamera vaatii turvallisen yhteyden (HTTPS). Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.'
+    return
   }
 
   try {
-    error.value = '';
+    error.value = ''
     mediaStream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'environment', // Use back camera on mobile
         width: { ideal: 1920 },
         height: { ideal: 1080 }
       }
-    });
+    })
     
     // Set cameraActive first so the video element is rendered
-    cameraActive.value = true;
+    cameraActive.value = true
     
     // Wait for next tick to ensure video element is in DOM
-    await nextTick();
+    await nextTick()
     
     if (videoElement.value) {
-      videoElement.value.srcObject = mediaStream;
+      videoElement.value.srcObject = mediaStream
       
       // Wait for video to be ready and start playing
       try {
-        await videoElement.value.play();
+        await videoElement.value.play()
       } catch (playErr) {
-        console.warn('Video play promise rejected:', playErr);
+        console.warn('Video play promise rejected:', playErr)
         // This is often fine - the video will autoplay anyway
       }
     } else {
-      error.value = 'Kameran alustus epäonnistui';
-      stopCamera();
+      error.value = 'Kameran alustus epäonnistui'
+      stopCamera()
     }
   } catch (err) {
-    console.error('Camera error:', err);
+    console.error('Camera error:', err)
     
     // Provide more specific error messages
-    if (err.name === 'NotAllowedError') {
-      error.value = 'Kameran käyttö estetty. Anna selaimelle lupa käyttää kameraa.';
-    } else if (err.name === 'NotFoundError') {
-      error.value = 'Kameraa ei löytynyt. Varmista että laitteessasi on kamera.';
-    } else if (err.name === 'NotReadableError') {
-      error.value = 'Kamera on jo käytössä toisessa sovelluksessa.';
-    } else if (err.name === 'OverconstrainedError') {
-      error.value = 'Kameran asetukset eivät ole tuettuja.';
-    } else if (err.name === 'SecurityError') {
-      error.value = 'Kamera vaatii HTTPS-yhteyden. Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.';
+    if (err instanceof Error) {
+      if (err.name === 'NotAllowedError') {
+        error.value = 'Kameran käyttö estetty. Anna selaimelle lupa käyttää kameraa.'
+      } else if (err.name === 'NotFoundError') {
+        error.value = 'Kameraa ei löytynyt. Varmista että laitteessasi on kamera.'
+      } else if (err.name === 'NotReadableError') {
+        error.value = 'Kamera on jo käytössä toisessa sovelluksessa.'
+      } else if (err.name === 'OverconstrainedError') {
+        error.value = 'Kameran asetukset eivät ole tuettuja.'
+      } else if (err.name === 'SecurityError') {
+        error.value = 'Kamera vaatii HTTPS-yhteyden. Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.'
+      } else {
+        error.value = `Kameran käynnistys epäonnistui: ${err.message}`
+      }
     } else {
-      error.value = `Kameran käynnistys epäonnistui: ${err.message}`;
+      error.value = 'Kameran käynnistys epäonnistui'
     }
-    cameraActive.value = false;
+    cameraActive.value = false
   }
 }
 
-function stopCamera() {
+function stopCamera(): void {
   if (mediaStream) {
-    mediaStream.getTracks().forEach(track => track.stop());
-    mediaStream = null;
+    mediaStream.getTracks().forEach(track => track.stop())
+    mediaStream = null
   }
-  cameraActive.value = false;
+  cameraActive.value = false
 }
 
-async function capturePhoto() {
+async function capturePhoto(): Promise<void> {
   if (!boxId.value) {
-    error.value = 'Syötä laatikon tunnus ennen kuvan ottamista';
-    return;
+    error.value = 'Syötä laatikon tunnus ennen kuvan ottamista'
+    return
   }
 
-  if (!videoElement.value || !canvasElement.value) return;
+  if (!videoElement.value || !canvasElement.value) return
 
-  const video = videoElement.value;
-  const canvas = canvasElement.value;
+  const video = videoElement.value
+  const canvas = canvasElement.value
   
   // Set canvas dimensions to match video
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
   
   // Draw the current video frame to canvas
-  const context = canvas.getContext('2d');
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext('2d')
+  if (!context) return
+  
+  context.drawImage(video, 0, 0, canvas.width, canvas.height)
   
   // Convert canvas to blob
   canvas.toBlob(async (blob) => {
     if (!blob) {
-      error.value = 'Kuvan tallentaminen epäonnistui';
-      return;
+      error.value = 'Kuvan tallentaminen epäonnistui'
+      return
     }
     
     // Show preview
-    previewImage.value = URL.createObjectURL(blob);
+    previewImage.value = URL.createObjectURL(blob)
     
     // Stop camera
-    stopCamera();
+    stopCamera()
     
     // Upload image
-    await uploadImage(blob);
-  }, 'image/jpeg', 0.9);
+    await uploadImage(blob)
+  }, 'image/jpeg', 0.9)
 }
 
-function retakePhoto() {
-  previewImage.value = null;
-  uploadedItem.value = null;
-  error.value = '';
-  startCamera();
+function retakePhoto(): void {
+  previewImage.value = null
+  uploadedItem.value = null
+  error.value = ''
+  startCamera()
 }
 
-async function uploadImage(blob) {
+async function uploadImage(blob: Blob): Promise<void> {
   if (!boxId.value) {
-    error.value = 'Syötä laatikon tunnus';
-    return;
+    error.value = 'Syötä laatikon tunnus'
+    return
   }
 
   try {
-    uploading.value = true;
-    error.value = '';
+    uploading.value = true
+    error.value = ''
     
     // Convert blob to File object
-    const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+    const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
     
-    const result = await apiService.uploadImage(file, boxId.value);
-    uploadedItem.value = result;
+    const result = await apiService.uploadImage(file, boxId.value)
+    uploadedItem.value = result
   } catch (err) {
-    error.value = `Lataus epäonnistui: ${err.message}`;
-    console.error('Upload error:', err);
+    error.value = `Lataus epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Upload error:', err)
   } finally {
-    uploading.value = false;
+    uploading.value = false
   }
 }
 
-async function saveItem() {
-  if (!uploadedItem.value) return;
+async function saveItem(): Promise<void> {
+  if (!uploadedItem.value) return
 
   try {
-    saving.value = true;
-    error.value = '';
+    saving.value = true
+    error.value = ''
     
-    const success = await apiService.saveItem(uploadedItem.value);
+    const success = await apiService.saveItem(uploadedItem.value)
     if (success) {
-      alert('Kohde tallennettu onnistuneesti!');
-      resetForm();
-      router.back();
+      alert('Kohde tallennettu onnistuneesti!')
+      resetForm()
+      router.back()
     } else {
-      error.value = 'Tallentaminen epäonnistui';
+      error.value = 'Tallentaminen epäonnistui'
     }
   } catch (err) {
-    error.value = `Tallentaminen epäonnistui: ${err.message}`;
-    console.error('Save error:', err);
+    error.value = `Tallentaminen epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Save error:', err)
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
-async function rejectItem() {
-  if (!uploadedItem.value) return;
+async function rejectItem(): Promise<void> {
+  if (!uploadedItem.value) return
 
   if (!confirm('Haluatko varmasti hylätä tämän kohteen?')) {
-    return;
+    return
   }
 
   try {
-    deleting.value = true;
-    error.value = '';
+    deleting.value = true
+    error.value = ''
     
-    const success = await apiService.deleteItem(uploadedItem.value.id);
+    const success = await apiService.deleteItem(uploadedItem.value.id)
     if (success) {
-      alert('Kohde hylätty onnistuneesti!');
-      resetForm();
+      alert('Kohde hylätty onnistuneesti!')
+      resetForm()
     } else {
-      error.value = 'Hylätään epäonnistui';
+      error.value = 'Hylätään epäonnistui'
     }
   } catch (err) {
-    error.value = `Hylkääminen epäonnistui: ${err.message}`;
-    console.error('Delete error:', err);
+    error.value = `Hylkääminen epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Delete error:', err)
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
 }
 
-function resetForm() {
-  uploadedItem.value = null;
-  previewImage.value = null;
-  boxId.value = '';
-  stopCamera();
+function resetForm(): void {
+  uploadedItem.value = null
+  previewImage.value = null
+  boxId.value = ''
+  stopCamera()
 }
 
 // Clean up camera on component unmount
 onBeforeUnmount(() => {
-  stopCamera();
-});
+  stopCamera()
+})
 </script>
 
 <style scoped>

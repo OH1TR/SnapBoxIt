@@ -66,73 +66,74 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../services/apiService';
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import apiService from '../services/apiService'
+import type { ItemDto } from '../types'
 
-const router = useRouter();
-const boxes = ref([]);
-const selectedBox = ref('');
-const boxContents = ref([]);
-const loadingBoxes = ref(false);
-const loadingContents = ref(false);
-const noResults = ref(false);
-const error = ref('');
+const router = useRouter()
+const boxes = ref<string[]>([])
+const selectedBox = ref<string>('')
+const boxContents = ref<ItemDto[]>([])
+const loadingBoxes = ref<boolean>(false)
+const loadingContents = ref<boolean>(false)
+const noResults = ref<boolean>(false)
+const error = ref<string>('')
 
 onMounted(async () => {
-  await loadBoxes();
-});
+  await loadBoxes()
+})
 
 onBeforeUnmount(() => {
   // Clean up blob URLs to prevent memory leaks
-  cleanupBlobUrls();
-});
+  cleanupBlobUrls()
+})
 
-function cleanupBlobUrls() {
+function cleanupBlobUrls(): void {
   boxContents.value.forEach(item => {
     if (item.imageUrl && item.imageUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(item.imageUrl);
+      URL.revokeObjectURL(item.imageUrl)
     }
-  });
+  })
 }
 
-function goBack() {
-  router.back();
+function goBack(): void {
+  router.back()
 }
 
-async function loadBoxes() {
+async function loadBoxes(): Promise<void> {
   try {
-    loadingBoxes.value = true;
-    error.value = '';
+    loadingBoxes.value = true
+    error.value = ''
     
-    const boxList = await apiService.getBoxes();
-    boxes.value = boxList || [];
+    const boxList = await apiService.getBoxes()
+    boxes.value = boxList || []
   } catch (err) {
-    error.value = `Laatikoiden lataus epäonnistui: ${err.message}`;
-    console.error('Load boxes error:', err);
+    error.value = `Laatikoiden lataus epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Load boxes error:', err)
   } finally {
-    loadingBoxes.value = false;
+    loadingBoxes.value = false
   }
 }
 
-async function loadBoxContents() {
+async function loadBoxContents(): Promise<void> {
   if (!selectedBox.value) {
-    boxContents.value = [];
-    noResults.value = false;
-    return;
+    boxContents.value = []
+    noResults.value = false
+    return
   }
 
   try {
     // Clean up previous blob URLs before loading new content
-    cleanupBlobUrls();
+    cleanupBlobUrls()
     
-    loadingContents.value = true;
-    error.value = '';
-    noResults.value = false;
-    boxContents.value = [];
+    loadingContents.value = true
+    error.value = ''
+    noResults.value = false
+    boxContents.value = []
     
-    const items = await apiService.getBoxContents(selectedBox.value);
+    const items = await apiService.getBoxContents(selectedBox.value)
 
     if (items && items.length > 0) {
       // Load images for each item
@@ -141,39 +142,39 @@ async function loadBoxContents() {
           try {
             // Check if blobId exists before trying to load image
             if (item.blobId) {
-              const imageBytes = await apiService.getImageBytes(item.blobId, true);
-              const blob = new Blob([imageBytes], { type: 'image/jpeg' });
-              const imageUrl = URL.createObjectURL(blob);
+              const imageBytes = await apiService.getImageBytes(item.blobId, true)
+              const blob = new Blob([imageBytes], { type: 'image/jpeg' })
+              const imageUrl = URL.createObjectURL(blob)
               return {
                 ...item,
                 imageUrl
-              };
+              }
             } else {
               return {
                 ...item,
-                imageUrl: null
-              };
+                imageUrl: undefined
+              }
             }
           } catch (err) {
-            console.error('Error loading image for item:', item.id, err);
+            console.error('Error loading image for item:', item.id, err)
             return {
               ...item,
-              imageUrl: null
-            };
+              imageUrl: undefined
+            }
           }
         })
-      );
-      boxContents.value = itemsWithImages;
-      noResults.value = false;
+      )
+      boxContents.value = itemsWithImages
+      noResults.value = false
     } else {
-      noResults.value = true;
+      noResults.value = true
     }
   } catch (err) {
-    error.value = `Laatikon sisällön lataus epäonnistui: ${err.message}`;
-    console.error('Load box contents error:', err);
-    noResults.value = true;
+    error.value = `Laatikon sisällön lataus epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Load box contents error:', err)
+    noResults.value = true
   } finally {
-    loadingContents.value = false;
+    loadingContents.value = false
   }
 }
 </script>

@@ -57,48 +57,49 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../services/apiService';
+<script setup lang="ts">
+import { ref, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import apiService from '../services/apiService'
+import type { ItemDto } from '../types'
 
-const router = useRouter();
-const searchQuery = ref('');
-const searchResults = ref([]);
-const loading = ref(false);
-const noResults = ref(false);
-const error = ref('');
+const router = useRouter()
+const searchQuery = ref<string>('')
+const searchResults = ref<ItemDto[]>([])
+const loading = ref<boolean>(false)
+const noResults = ref<boolean>(false)
+const error = ref<string>('')
 
 onBeforeUnmount(() => {
   // Clean up blob URLs to prevent memory leaks
-  cleanupBlobUrls();
-});
+  cleanupBlobUrls()
+})
 
-function goBack() {
-  router.back();
+function goBack(): void {
+  router.back()
 }
 
-function cleanupBlobUrls() {
+function cleanupBlobUrls(): void {
   searchResults.value.forEach(result => {
     if (result.imageUrl && result.imageUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(result.imageUrl);
+      URL.revokeObjectURL(result.imageUrl)
     }
-  });
+  })
 }
 
-async function performSearch() {
-  if (!searchQuery.value.trim()) return;
+async function performSearch(): Promise<void> {
+  if (!searchQuery.value.trim()) return
 
   try {
     // Clean up previous blob URLs before loading new results
-    cleanupBlobUrls();
+    cleanupBlobUrls()
     
-    loading.value = true;
-    error.value = '';
-    noResults.value = false;
-    searchResults.value = [];
+    loading.value = true
+    error.value = ''
+    noResults.value = false
+    searchResults.value = []
 
-    const items = await apiService.searchItems(searchQuery.value, 10);
+    const items = await apiService.searchItems(searchQuery.value, 10)
 
     if (items && items.length > 0) {
       // Load images for each result
@@ -107,39 +108,39 @@ async function performSearch() {
           try {
             // Check if blobId exists before trying to load image
             if (item.blobId) {
-              const imageBytes = await apiService.getImageBytes(item.blobId, true);
-              const blob = new Blob([imageBytes], { type: 'image/jpeg' });
-              const imageUrl = URL.createObjectURL(blob);
+              const imageBytes = await apiService.getImageBytes(item.blobId, true)
+              const blob = new Blob([imageBytes], { type: 'image/jpeg' })
+              const imageUrl = URL.createObjectURL(blob)
               return {
                 ...item,
                 imageUrl
-              };
+              }
             } else {
               return {
                 ...item,
-                imageUrl: null
-              };
+                imageUrl: undefined
+              }
             }
           } catch (err) {
-            console.error('Error loading image for item:', item.id, err);
+            console.error('Error loading image for item:', item.id, err)
             return {
               ...item,
-              imageUrl: null
-            };
+              imageUrl: undefined
+            }
           }
         })
-      );
-      searchResults.value = resultsWithImages;
-      noResults.value = false;
+      )
+      searchResults.value = resultsWithImages
+      noResults.value = false
     } else {
-      noResults.value = true;
+      noResults.value = true
     }
   } catch (err) {
-    error.value = `Haku epäonnistui: ${err.message}`;
-    console.error('Search error:', err);
-    noResults.value = true;
+    error.value = `Haku epäonnistui: ${err instanceof Error ? err.message : 'Tuntematon virhe'}`
+    console.error('Search error:', err)
+    noResults.value = true
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 </script>

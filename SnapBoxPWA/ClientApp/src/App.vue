@@ -6,11 +6,33 @@
     <main>
       <router-view />
     </main>
+    
+    <!-- Floating Voice Assistant Button -->
+    <button 
+      v-if="$route.path !== '/voice'" 
+      @click="toggleVoiceChat" 
+      class="voice-fab"
+      :class="{ active: showVoiceChat }"
+      title="AI Voice Assistant"
+    >
+      <span v-if="!showVoiceChat">??</span>
+      <span v-else>×</span>
+    </button>
+
+    <!-- Voice Chat Component -->
+    <VoiceChat v-if="showVoiceChat" @close="showVoiceChat = false" />
   </div>
 </template>
 
-<script setup>
-// No imports needed, router-view is globally available
+<script setup lang="ts">
+import { ref } from 'vue'
+import VoiceChat from './components/VoiceChat.vue'
+
+const showVoiceChat = ref(false)
+
+function toggleVoiceChat() {
+  showVoiceChat.value = !showVoiceChat.value
+}
 </script>
 
 <style>
@@ -46,5 +68,49 @@ header h1 {
 
 main {
   padding: 20px;
+}
+
+/* Floating Action Button */
+.voice-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  z-index: 999;
+}
+
+.voice-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.voice-fab:active {
+  transform: scale(0.95);
+}
+
+.voice-fab.active {
+  background: #f44336;
+}
+
+.voice-fab.active:hover {
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+}
+
+@media (max-width: 768px) {
+  .voice-fab {
+    bottom: 80px;
+  }
 }
 </style>
