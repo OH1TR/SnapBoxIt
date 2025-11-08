@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace SnapBoxApi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class RealtimeController : ControllerBase
 {
     private readonly OpenAIClient _openAiClient;
