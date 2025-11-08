@@ -5,7 +5,6 @@ import SearchPage from '../views/SearchPage.vue'
 import BoxViewPage from '../views/BoxViewPage.vue'
 import PrintPage from '../views/PrintPage.vue'
 import SettingsPage from '../views/SettingsPage.vue'
-import VoiceAssistantPage from '../views/VoiceAssistantPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -37,11 +36,6 @@ const routes: RouteRecordRaw[] = [
     path: '/settings',
     name: 'Settings',
     component: SettingsPage
-  },
-  {
-    path: '/voice',
-    name: 'VoiceAssistant',
-    component: VoiceAssistantPage
   }
 ]
 

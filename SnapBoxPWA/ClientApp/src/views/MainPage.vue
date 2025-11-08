@@ -24,12 +24,6 @@
         <p>Selaa laatikoiden sisältöä</p>
       </button>
 
-      <button @click="navigateTo('/voice')" class="menu-button voice">
-        <div class="icon">??</div>
-        <h3>AI-Avustaja</h3>
-        <p>Puhu tai kirjoita AI-avustajalle</p>
-      </button>
-
       <button @click="navigateTo('/print')" class="menu-button print">
         <div class="icon">???</div>
         <h3>Tulosta</h3>
@@ -121,7 +115,6 @@ function navigateTo(path: string): void {
 .menu-button.upload:hover { border-color: #10b981; }
 .menu-button.search:hover { border-color: #3b82f6; }
 .menu-button.boxes:hover { border-color: #f59e0b; }
-.menu-button.voice:hover { border-color: #667eea; }
 .menu-button.print:hover { border-color: #8b5cf6; }
 .menu-button.settings:hover { border-color: #6b7280; }
 

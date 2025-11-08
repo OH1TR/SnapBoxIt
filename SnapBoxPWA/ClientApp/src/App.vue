@@ -1,37 +1,60 @@
 <template>
   <div id="app">
-    <header v-if="$route.path === '/'">
-      <h1>SnapBox PWA</h1>
-    </header>
+    <!-- App Header with voice controls -->
+    <AppHeader 
+      :is-voice-active="isVoiceActive"
+      :is-connected="isVoiceConnected"
+      :messages="voiceMessages"
+      @toggle-voice="toggleVoice"
+    />
+    
     <main>
       <router-view />
     </main>
-    
-    <!-- Floating Voice Assistant Button -->
-    <button 
-      v-if="$route.path !== '/voice'" 
-      @click="toggleVoiceChat" 
-      class="voice-fab"
-      :class="{ active: showVoiceChat }"
-      title="AI Voice Assistant"
-    >
-      <span v-if="!showVoiceChat">??</span>
-      <span v-else>×</span>
-    </button>
 
-    <!-- Voice Chat Component -->
-    <VoiceChat v-if="showVoiceChat" @close="showVoiceChat = false" />
+    <!-- Background Voice Controller (no UI) -->
+    <VoiceController 
+      :is-active="isVoiceActive"
+      @update:connected="isVoiceConnected = $event"
+      @update:messages="voiceMessages = $event"
+      @error="handleVoiceError"
+    />
+
+    <!-- Error notification -->
+    <transition name="fade">
+      <div v-if="errorMessage" class="error-notification" @click="errorMessage = ''">
+        {{ errorMessage }}
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import VoiceChat from './components/VoiceChat.vue'
+import AppHeader from './components/AppHeader.vue'
+import VoiceController from './components/VoiceController.vue'
 
-const showVoiceChat = ref(false)
+interface Message {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: Date
+}
 
-function toggleVoiceChat() {
-  showVoiceChat.value = !showVoiceChat.value
+const isVoiceActive = ref(false)
+const isVoiceConnected = ref(false)
+const voiceMessages = ref<Message[]>([])
+const errorMessage = ref('')
+
+function toggleVoice() {
+  isVoiceActive.value = !isVoiceActive.value
+}
+
+function handleVoiceError(message: string) {
+  errorMessage.value = message
+  // Auto-dismiss after 5 seconds
+  setTimeout(() => {
+    errorMessage.value = ''
+  }, 5000)
 }
 </script>
 
@@ -51,66 +74,45 @@ body {
 
 #app {
   min-height: 100vh;
-}
-
-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-  margin: 0;
-  font-size: 2rem;
+  display: flex;
+  flex-direction: column;
 }
 
 main {
+  flex: 1;
   padding: 20px;
 }
 
-/* Floating Action Button */
-.voice-fab {
+/* Error notification */
+.error-notification {
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  z-index: 999;
-}
-
-.voice-fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.voice-fab:active {
-  transform: scale(0.95);
-}
-
-.voice-fab.active {
+  left: 50%;
+  transform: translateX(-50%);
   background: #f44336;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(244, 67, 54, 0.4);
+  z-index: 1001;
+  cursor: pointer;
+  max-width: 90vw;
+  text-align: center;
 }
 
-.voice-fab.active:hover {
-  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {
-  .voice-fab {
-    bottom: 80px;
+  main {
+    padding: 16px;
   }
 }
 </style>
