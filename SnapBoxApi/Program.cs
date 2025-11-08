@@ -11,14 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<FormOptions>(options => { options.MultipartBodyLengthLimit = 104857600; });
 
-// Add CORS services
+// Add CORS services with a more explicit policy
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .WithExposedHeaders("*"); // Expose all response headers
     });
 });
 
@@ -33,10 +34,11 @@ builder.Services.AddScoped<DataService>();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
-// Enable CORS before authentication middleware
+// Enable CORS before HTTPS redirection and other middleware
+// This ensures CORS headers are added to all responses, including errors
 app.UseCors();
+
+app.UseHttpsRedirection();
 
 app.UseMiddleware<BasicAuthMiddleware>();
 app.MapControllers();
