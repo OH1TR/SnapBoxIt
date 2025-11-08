@@ -13,3 +13,6 @@
 /.vscode
 /LabelPrintingAgent/bin
 /LabelPrintingAgent/obj
+/SnapBoxPWA/bin
+/SnapBoxPWA/obj
+/SnapBoxPWA/publish

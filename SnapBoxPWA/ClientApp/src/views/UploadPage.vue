@@ -1,0 +1,593 @@
+<template>
+  <div class="upload-page">
+    <div class="header">
+      <button @click="goBack" class="back-button">? Takaisin</button>
+      <h1>Lataa kuva</h1>
+    </div>
+
+    <div class="upload-container">
+      <div class="form-section">
+        <div class="form-group">
+          <label for="boxId">Laatikon tunnus</label>
+          <input
+            id="boxId"
+            v-model="boxId"
+            type="text"
+            placeholder="Esim. BOX001"
+            class="input-field"
+          />
+        </div>
+
+        <div class="camera-section">
+          <!-- Camera compatibility warning -->
+          <div v-if="!isCameraSupported" class="warning-message">
+            <p><strong>Kamera ei ole käytettävissä</strong></p>
+            <p v-if="!isSecureContext">Kamera vaatii HTTPS-yhteyden. Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.</p>
+            <p v-else>Selaimesi ei tue kameran käyttöä tai kameraa ei löydy.</p>
+          </div>
+
+          <div v-if="!cameraActive && !previewImage" class="camera-controls">
+            <button
+              @click="startCamera"
+              :disabled="!boxId || uploading || !isCameraSupported"
+              class="btn-camera"
+            >
+              ?? {{ uploading ? 'Ladataan...' : 'Avaa kamera' }}
+            </button>
+          </div>
+
+          <div v-if="cameraActive" class="camera-container">
+            <video
+              ref="videoElement"
+              autoplay
+              playsinline
+              class="camera-video"
+            ></video>
+            <div class="camera-controls">
+              <button @click="capturePhoto" class="btn-capture">
+                ?? Ota kuva
+              </button>
+              <button @click="stopCamera" class="btn-secondary">
+                Sulje kamera
+              </button>
+            </div>
+          </div>
+
+          <canvas ref="canvasElement" style="display: none"></canvas>
+        </div>
+
+        <div v-if="previewImage" class="preview-section">
+          <img :src="previewImage" alt="Preview" class="preview-image" />
+          <button @click="retakePhoto" class="btn-secondary">
+            ?? Ota uusi kuva
+          </button>
+        </div>
+      </div>
+
+      <div v-if="uploadedItem" class="item-details">
+        <h2>Kuva ladattu onnistuneesti!</h2>
+        
+        <div class="detail-group">
+          <label>Otsikko</label>
+          <p>{{ uploadedItem.title || 'Ei otsikkoa' }}</p>
+        </div>
+
+        <div class="detail-group">
+          <label>Kategoria</label>
+          <p>{{ uploadedItem.category || 'Ei kategoriaa' }}</p>
+        </div>
+
+        <div class="detail-group">
+          <label>Kuvaus</label>
+          <p>{{ uploadedItem.detailedDescription || 'Ei kuvausta' }}</p>
+        </div>
+
+        <div class="detail-group">
+          <label>Värit</label>
+          <p>{{ uploadedItem.colors?.join(', ') || 'Ei värejä' }}</p>
+        </div>
+
+        <div class="form-group">
+          <label for="count">Määrä</label>
+          <input
+            id="count"
+            v-model.number="uploadedItem.count"
+            type="number"
+            step="0.1"
+            class="input-field"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="userDescription">Oma kuvaus</label>
+          <textarea
+            id="userDescription"
+            v-model="uploadedItem.userDescription"
+            rows="4"
+            class="textarea-field"
+            placeholder="Lisää oma kuvaus..."
+          ></textarea>
+        </div>
+
+        <div class="button-group">
+          <button @click="saveItem" :disabled="saving" class="btn-primary">
+            {{ saving ? 'Tallennetaan...' : 'Tallenna' }}
+          </button>
+          <button @click="rejectItem" :disabled="deleting" class="btn-danger">
+            {{ deleting ? 'Hylätään...' : 'Hylkää' }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onBeforeUnmount, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import apiService from '../services/apiService';
+
+const router = useRouter();
+const videoElement = ref(null);
+const canvasElement = ref(null);
+const boxId = ref('');
+const previewImage = ref(null);
+const uploadedItem = ref(null);
+const uploading = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
+const error = ref('');
+const cameraActive = ref(false);
+const isSecureContext = ref(false);
+const hasCameraSupport = ref(false);
+let mediaStream = null;
+
+// Check if camera is supported
+const isCameraSupported = computed(() => {
+  return isSecureContext.value && hasCameraSupport.value;
+});
+
+// Check camera support on mount
+onMounted(() => {
+  // Check if we're in a secure context (HTTPS or localhost)
+  isSecureContext.value = window.isSecureContext || false;
+  
+  // Check if mediaDevices API is available
+  hasCameraSupport.value = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  
+  if (!isSecureContext.value) {
+    console.warn('Not in secure context. Camera access requires HTTPS or localhost.');
+  }
+  
+  if (!hasCameraSupport.value) {
+    console.warn('getUserMedia API not supported in this browser.');
+  }
+});
+
+function goBack() {
+  stopCamera();
+  router.back();
+}
+
+async function startCamera() {
+  // Additional validation
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    error.value = 'Selaimesi ei tue kameran käyttöä. Varmista että käytät HTTPS-yhteyttä.';
+    return;
+  }
+
+  if (!window.isSecureContext) {
+    error.value = 'Kamera vaatii turvallisen yhteyden (HTTPS). Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.';
+    return;
+  }
+
+  try {
+    error.value = '';
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'environment', // Use back camera on mobile
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+    });
+    
+    if (videoElement.value) {
+      videoElement.value.srcObject = mediaStream;
+      cameraActive.value = true;
+    }
+  } catch (err) {
+    console.error('Camera error:', err);
+    
+    // Provide more specific error messages
+    if (err.name === 'NotAllowedError') {
+      error.value = 'Kameran käyttö estetty. Anna selaimelle lupa käyttää kameraa.';
+    } else if (err.name === 'NotFoundError') {
+      error.value = 'Kameraa ei löytynyt. Varmista että laitteessasi on kamera.';
+    } else if (err.name === 'NotReadableError') {
+      error.value = 'Kamera on jo käytössä toisessa sovelluksessa.';
+    } else if (err.name === 'OverconstrainedError') {
+      error.value = 'Kameran asetukset eivät ole tuettuja.';
+    } else if (err.name === 'SecurityError') {
+      error.value = 'Kamera vaatii HTTPS-yhteyden. Käytä osoitetta https://localhost tai palvelinta HTTPS:llä.';
+    } else {
+      error.value = `Kameran käynnistys epäonnistui: ${err.message}`;
+    }
+  }
+}
+
+function stopCamera() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+  cameraActive.value = false;
+}
+
+async function capturePhoto() {
+  if (!videoElement.value || !canvasElement.value) return;
+
+  const video = videoElement.value;
+  const canvas = canvasElement.value;
+  
+  // Set canvas dimensions to match video
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  
+  // Draw the current video frame to canvas
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // Convert canvas to blob
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      error.value = 'Kuvan tallentaminen epäonnistui';
+      return;
+    }
+    
+    // Show preview
+    previewImage.value = URL.createObjectURL(blob);
+    
+    // Stop camera
+    stopCamera();
+    
+    // Upload image
+    await uploadImage(blob);
+  }, 'image/jpeg', 0.9);
+}
+
+function retakePhoto() {
+  previewImage.value = null;
+  uploadedItem.value = null;
+  error.value = '';
+  startCamera();
+}
+
+async function uploadImage(blob) {
+  if (!boxId.value) {
+    error.value = 'Syötä laatikon tunnus';
+    return;
+  }
+
+  try {
+    uploading.value = true;
+    error.value = '';
+    
+    // Convert blob to File object
+    const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+    
+    const result = await apiService.uploadImage(file, boxId.value);
+    uploadedItem.value = result;
+  } catch (err) {
+    error.value = `Lataus epäonnistui: ${err.message}`;
+    console.error('Upload error:', err);
+  } finally {
+    uploading.value = false;
+  }
+}
+
+async function saveItem() {
+  if (!uploadedItem.value) return;
+
+  try {
+    saving.value = true;
+    error.value = '';
+    
+    const success = await apiService.saveItem(uploadedItem.value);
+    if (success) {
+      alert('Kohde tallennettu onnistuneesti!');
+      resetForm();
+      router.back();
+    } else {
+      error.value = 'Tallentaminen epäonnistui';
+    }
+  } catch (err) {
+    error.value = `Tallentaminen epäonnistui: ${err.message}`;
+    console.error('Save error:', err);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function rejectItem() {
+  if (!uploadedItem.value) return;
+
+  if (!confirm('Haluatko varmasti hylätä tämän kohteen?')) {
+    return;
+  }
+
+  try {
+    deleting.value = true;
+    error.value = '';
+    
+    const success = await apiService.deleteItem(uploadedItem.value.id);
+    if (success) {
+      alert('Kohde hylätty onnistuneesti!');
+      resetForm();
+    } else {
+      error.value = 'Hylätään epäonnistui';
+    }
+  } catch (err) {
+    error.value = `Hylkääminen epäonnistui: ${err.message}`;
+    console.error('Delete error:', err);
+  } finally {
+    deleting.value = false;
+  }
+}
+
+function resetForm() {
+  uploadedItem.value = null;
+  previewImage.value = null;
+  boxId.value = '';
+  stopCamera();
+}
+
+// Clean up camera on component unmount
+onBeforeUnmount(() => {
+  stopCamera();
+});
+</script>
+
+<style scoped>
+.upload-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.back-button {
+  background: #f0f0f0;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.back-button:hover {
+  background: #e0e0e0;
+}
+
+.header h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.upload-container {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.input-field, .textarea-field {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.input-field:focus, .textarea-field:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.camera-section {
+  margin: 20px 0;
+}
+
+.camera-container {
+  width: 100%;
+}
+
+.camera-video {
+  width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #000;
+  display: block;
+}
+
+.camera-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-camera, .btn-capture {
+  flex: 1;
+  padding: 15px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-camera:hover:not(:disabled), .btn-capture:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.btn-camera:disabled, .btn-capture:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 15px;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.preview-section {
+  margin: 20px 0;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.item-details {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 30px;
+}
+
+.item-details h2 {
+  color: #10b981;
+  margin-bottom: 20px;
+}
+
+.detail-group {
+  margin-bottom: 15px;
+}
+
+.detail-group label {
+  display: block;
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.detail-group p {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-primary, .btn-danger {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #0066cc;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0052a3;
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+.btn-primary:disabled, .btn-danger:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #fee;
+  color: #c00;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+}
+
+.warning-message {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+}
+
+.warning-message p {
+  margin: 8px 0;
+}
+
+.warning-message p:first-child {
+  margin-top: 0;
+}
+
+.warning-message p:last-child {
+  margin-bottom: 0;
+}
+</style>

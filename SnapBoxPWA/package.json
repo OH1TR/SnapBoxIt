@@ -1,0 +1,32 @@
+{
+  "name": "snapboxpwa",
+  "version": "1.0.0",
+  "description": "SnapBox Progressive Web Application",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "snapbox",
+    "pwa",
+    "vue",
+    "inventory",
+    "component-management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "axios": "^1.7.9",
+    "pinia": "^3.0.4",
+    "vite": "^6.0.5",
+    "vue": "^3.5.24",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}
