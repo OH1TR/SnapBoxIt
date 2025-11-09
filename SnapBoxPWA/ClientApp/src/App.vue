@@ -10,9 +10,14 @@
     
     <main>
       <router-view 
+        v-slot="{ Component }"
         :selected-box-id="selectedBoxId"
         @camera-trigger="handleCameraTrigger"
-      />
+      >
+        <keep-alive include="SearchPage,BoxViewPage">
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
     </main>
 
     <!-- Background Voice Controller (no UI) -->

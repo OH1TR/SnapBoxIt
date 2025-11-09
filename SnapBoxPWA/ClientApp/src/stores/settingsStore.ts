@@ -128,8 +128,8 @@ export const useSettingsStore = defineStore('settings', () => {
     return `Basic ${credentials}`
   }
 
-  // Auto-load settings on store initialization
-  loadSettings()
+  // NOTE: loadSettings is now called explicitly in main.ts before app mount
+  // to ensure settings are loaded before any components try to use them
 
   return {
     apiBaseUrl,

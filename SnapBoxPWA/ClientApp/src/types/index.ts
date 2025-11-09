@@ -9,6 +9,8 @@ export interface ItemDto {
   blobId?: string
   boxId?: string
   imageUrl?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface SearchRequest {

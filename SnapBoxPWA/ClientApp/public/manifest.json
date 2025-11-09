@@ -1,8 +1,8 @@
 {
   "name": "SnapBox PWA",
   "short_name": "SnapBox",
-  "description": "J‰rjestelm‰ komponenttien hallintaan",
-  "start_url": "/",
+  "description": "J√§rjestelm√§ komponenttien hallintaan",
+  "start_url": "/SnapBoxPWA",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#667eea",

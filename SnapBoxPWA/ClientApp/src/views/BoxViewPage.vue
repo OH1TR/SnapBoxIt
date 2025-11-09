@@ -25,43 +25,22 @@
         Ladataan laatikoita...
       </div>
 
-      <div v-else-if="loadingContents" class="loading">
-        Ladataan laatikon sisältöä...
-      </div>
-
-      <div v-else-if="noResults" class="no-results">
-        Laatikko on tyhjä tai sitä ei löytynyt.
-      </div>
-
-      <div v-else-if="boxContents.length > 0" class="results">
-        <h2>{{ selectedBox }} - {{ boxContents.length }} kohdetta</h2>
-        <div class="results-grid">
-          <div
-            v-for="item in boxContents"
-            :key="item.id"
-            class="result-card"
-          >
-            <div v-if="item.imageUrl" class="result-image">
-              <img :src="item.imageUrl" :alt="item.title" />
-            </div>
-            <div class="result-content">
-              <h3>{{ item.title || 'Ei otsikkoa' }}</h3>
-              <div class="result-meta">
-                <span class="category">{{ item.category }}</span>
-                <span v-if="item.count" class="count">Määrä: {{ item.count }}</span>
-              </div>
-              <p class="description">{{ item.detailedDescription || 'Ei kuvausta' }}</p>
-              <p v-if="item.userDescription" class="user-description">
-                <em>{{ item.userDescription }}</em>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="error" class="error-message">
-        {{ error }}
-      </div>
+      <SearchResultsView
+        v-else
+        :items="boxContents"
+        :loading="loadingContents"
+        :error="error"
+        :no-results="noResults"
+        :loading-message="'Ladataan laatikon sisältöä...'"
+        :no-results-message="'Laatikko on tyhjä tai sitä ei löytynyt.'"
+        :title-prefix="selectedBox"
+        :show-count="true"
+        :show-user-description="true"
+        :show-box-id="false"
+        :show-delete-button="true"
+        @item-click="handleItemClick"
+        @item-deleted="handleItemDeleted"
+      />
     </div>
   </div>
 </template>
@@ -70,7 +49,13 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import apiService from '../services/apiService'
+import SearchResultsView from '../components/SearchResultsView.vue'
 import type { ItemDto } from '../types'
+
+// Define component name for keep-alive
+defineOptions({
+  name: 'BoxViewPage'
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -116,6 +101,22 @@ function cleanupBlobUrls(): void {
 
 function goBack(): void {
   router.back()
+}
+
+function handleItemClick(item: ItemDto): void {
+  // Navigate to edit page with item data
+  const itemData = encodeURIComponent(JSON.stringify(item))
+  router.push(`/edit/${itemData}`)
+}
+
+function handleItemDeleted(item: ItemDto): void {
+  // Remove the item from box contents
+  boxContents.value = boxContents.value.filter(i => i.id !== item.id)
+  
+  // Update noResults state if needed
+  if (boxContents.value.length === 0) {
+    noResults.value = true
+  }
 }
 
 async function loadBoxes(): Promise<void> {
@@ -261,100 +262,10 @@ async function loadBoxContents(): Promise<void> {
   border-color: #0066cc;
 }
 
-.loading,
-.no-results {
+.loading {
   text-align: center;
   padding: 40px;
   color: #666;
   font-size: 18px;
-}
-
-.results h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.result-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.3s;
-}
-
-.result-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.result-image {
-  width: 100%;
-  height: 200px;
-  background: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.result-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.result-content {
-  padding: 15px;
-}
-
-.result-content h3 {
-  margin: 0 0 10px 0;
-  color: #2c3e50;
-  font-size: 18px;
-}
-
-.result-meta {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.category,
-.count {
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  background: #f0f0f0;
-  color: #666;
-}
-
-.description {
-  color: #666;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0 0 10px 0;
-}
-
-.user-description {
-  color: #0066cc;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.error-message {
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-  text-align: center;
 }
 </style>

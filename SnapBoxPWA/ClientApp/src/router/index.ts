@@ -5,6 +5,7 @@ import SearchPage from '../views/SearchPage.vue'
 import BoxViewPage from '../views/BoxViewPage.vue'
 import PrintPage from '../views/PrintPage.vue'
 import SettingsPage from '../views/SettingsPage.vue'
+import EditPage from '../views/EditPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -36,6 +37,11 @@ const routes: RouteRecordRaw[] = [
     path: '/settings',
     name: 'Settings',
     component: SettingsPage
+  },
+  {
+    path: '/edit/:item',
+    name: 'Edit',
+    component: EditPage
   }
 ]
 
