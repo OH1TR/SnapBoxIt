@@ -65,14 +65,18 @@ const passwordInput = ref<string>('')
 const message = ref<string>('')
 const messageType = ref<'success' | 'info'>('success')
 
-onMounted(() => {
+onMounted(async () => {
+  // Wait for settings to load if not already loaded
+  if (!settingsStore.isLoaded) {
+    await settingsStore.loadSettings()
+  }
   apiUrl.value = settingsStore.apiBaseUrl
   usernameInput.value = settingsStore.username
   passwordInput.value = settingsStore.password
 })
 
-function save(): void {
-  settingsStore.saveSettings(apiUrl.value, usernameInput.value, passwordInput.value)
+async function save(): Promise<void> {
+  await settingsStore.saveSettings(apiUrl.value, usernameInput.value, passwordInput.value)
   message.value = 'Asetukset tallennettu onnistuneesti!'
   messageType.value = 'success'
   setTimeout(() => {
@@ -80,9 +84,9 @@ function save(): void {
   }, 3000)
 }
 
-function clear(): void {
+async function clear(): Promise<void> {
   if (confirm('Haluatko varmasti tyhjentää kaikki asetukset?')) {
-    settingsStore.clearSettings()
+    await settingsStore.clearSettings()
     apiUrl.value = settingsStore.apiBaseUrl
     usernameInput.value = ''
     passwordInput.value = ''
