@@ -139,18 +139,33 @@ Teht‰v‰si: analysoi kuva ohjeiden mukaan ja palauta vain yll‰ m‰‰ritelty JSON-ol
                 ? $"{itemDto.Title} {itemDto.DetailedDescription} {string.Join(" ", itemDto.Colors)}" 
                 : $"{itemDto.Title} {itemDto.UserDescription} {string.Join(" ", itemDto.Colors)}";
 
-            var result = await _embeddingClient.GenerateEmbeddingsAsync(new[] { 
-                itemDto.Title, 
-                itemDto.Category, 
-                itemDto.DetailedDescription, 
-                fullText, 
-                itemDto.UserDescription ?? "" 
-            });
+            var inputTexts = new List<string>
+            {
+                itemDto.Title,
+                itemDto.Category,
+                itemDto.DetailedDescription,
+                fullText
+            };
+            
+            // Only add UserDescription if it's not empty
+            var hasUserDescription = !string.IsNullOrWhiteSpace(itemDto.UserDescription);
+            if (hasUserDescription)
+            {
+                inputTexts.Add(itemDto.UserDescription);
+            }
+
+            var result = await _embeddingClient.GenerateEmbeddingsAsync(inputTexts);
+            
             itemDto.TitleEmbedding = result.Value[0].ToFloats().ToArray();
             itemDto.CategoryEmbedding = result.Value[1].ToFloats().ToArray();
             itemDto.DetailedDescriptionEmbedding = result.Value[2].ToFloats().ToArray();
             itemDto.FullTextEmbedding = result.Value[3].ToFloats().ToArray();
-            itemDto.UserDescriptionEmbedding= result.Value[4].ToFloats().ToArray();
+            
+            // Only set UserDescriptionEmbedding if we generated one
+            if (hasUserDescription)
+            {
+                itemDto.UserDescriptionEmbedding = result.Value[4].ToFloats().ToArray();
+            }
         }
 
         public async Task<float[]> GetEmbeddingAsync(string input)
