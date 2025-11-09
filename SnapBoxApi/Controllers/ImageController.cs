@@ -56,24 +56,30 @@ namespace SnapBoxApi.Controllers
                     return BadRequest("Box ID is required.");
                 }
 
-                _logger.LogInformation($"Starting upload for box: {boxId}, file size: {file.Length} bytes");
+                _logger.LogInformation($"Starting upload for box: {boxId}, file size: {file.Length} bytes, content type: {file.ContentType}");
 
                 var blobId = $"{Guid.NewGuid()}";
 
                 using var originalStream = new MemoryStream();
                 await file.CopyToAsync(originalStream);
+                _logger.LogInformation($"Copied file to memory stream, stream length: {originalStream.Length} bytes");
+                
                 originalStream.Position = 0;
 
                 // Upload to blob storage first
+                _logger.LogInformation($"Starting blob upload for {blobId}");
                 await UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
+                _logger.LogInformation($"Blob upload completed for {blobId}");
 
                 // Kuvan analyysi - reset position before analysis
                 originalStream.Position = 0;
-                var description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream);
+                _logger.LogInformation($"Starting image analysis for {blobId}, stream position: {originalStream.Position}, length: {originalStream.Length}");
+                var description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream, file.ContentType);
                 description.BlobId = blobId;
                 description.BoxId = boxId;
                 description.Count = 1;
                 
+                _logger.LogInformation($"Image analysis completed, saving to database");
                 await _cosmosService.AddItemAsync(description);
 
                 _logger.LogInformation($"Successfully uploaded image {blobId} for box {boxId}");
@@ -81,7 +87,7 @@ namespace SnapBoxApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error uploading image for box {boxId}");
+                _logger.LogError(ex, $"Error uploading image for box {boxId}: {ex.Message}");
                 return StatusCode(500, $"Error uploading image: {ex.Message}");
             }
         }

@@ -43,20 +43,32 @@ namespace SnapBoxApi.Services
         }
 
 
-        public async Task<ItemDto> GetImageDescriptionAsync(MemoryStream file)
+        public async Task<ItemDto> GetImageDescriptionAsync(MemoryStream file, string contentType = "image/jpeg")
         {
             // Reset position to beginning to ensure we read the entire stream
             file.Position = 0;
+            
+            // Validate that we have data
+            if (file.Length == 0)
+            {
+                throw new ArgumentException("Image stream is empty", nameof(file));
+            }
             
             // Copy to a new stream to avoid position issues
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
             
+            // Validate the copy was successful
+            if (memoryStream.Length == 0)
+            {
+                throw new InvalidOperationException("Failed to copy image data to memory stream");
+            }
+            
             // Create BinaryData from the array (stream will be disposed after using block)
             BinaryData imageBinary = new BinaryData(memoryStream.ToArray());
 
             var textPart = ChatMessageContentPart.CreateTextPart("Describe this image in one sentence.");
-            var imgPart = ChatMessageContentPart.CreateImagePart(imageBinary, "image/png");
+            var imgPart = ChatMessageContentPart.CreateImagePart(imageBinary, contentType);
 
             var msg = new UserChatMessage(textPart, imgPart);
 
