@@ -213,12 +213,6 @@ async function confirmDelete(): Promise<void> {
   margin-bottom: 20px;
 }
 
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
 .result-card {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -327,111 +321,5 @@ async function confirmDelete(): Promise<void> {
 .delete-button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
-}
-
-.error-message {
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-  text-align: center;
-}
-
-/* Dialog Styles */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.dialog-content {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
-  width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.dialog-content h3 {
-  margin: 0 0 12px 0;
-  color: #2c3e50;
-  font-size: 20px;
-}
-
-.dialog-content p {
-  margin: 0 0 16px 0;
-  color: #666;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.item-info {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.item-info strong {
-  color: #2c3e50;
-  font-size: 16px;
-}
-
-.item-info .box-info {
-  color: #666;
-  font-size: 14px;
-}
-
-.dialog-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.btn-cancel,
-.btn-confirm {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-cancel {
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.btn-cancel:hover {
-  background-color: #d0d0d0;
-}
-
-.btn-confirm {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-confirm:hover {
-  background-color: #c82333;
-}
-
-.btn-confirm:active {
-  background-color: #bd2130;
 }
 </style>

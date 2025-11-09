@@ -1,7 +1,0 @@
-// Watch for voice-selected box ID - ALWAYS update to allow re-selection
-watch(() => voiceSelectedBoxId.value, (newBoxId) => {
-  if (newBoxId) {
-    boxId.value = newBoxId
-    console.log('Box ID set/updated from voice command:', newBoxId)
-  }
-})

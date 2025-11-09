@@ -415,48 +415,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.upload-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.back-button {
-  background: #f0f0f0;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #e0e0e0;
-}
-
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-.upload-container {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-section {
-  margin-bottom: 30px;
-}
+/* Most common styles removed - now in global style.css */
 
 .camera-video {
   width: 100%;
@@ -494,22 +453,6 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-.btn-secondary {
-  flex: 1;
-  padding: 15px;
-  background-color: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: #4b5563;
-}
-
 .preview-section {
   margin: 20px 0;
 }
@@ -531,92 +474,5 @@ onBeforeUnmount(() => {
 .item-details h2 {
   color: #10b981;
   margin-bottom: 20px;
-}
-
-.detail-group {
-  margin-bottom: 15px;
-}
-
-.detail-group label {
-  display: block;
-  font-weight: 500;
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.detail-group p {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 16px;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-primary, .btn-danger {
-  flex: 1;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background-color: #0066cc;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0052a3;
-}
-
-.btn-danger {
-  background-color: #dc2626;
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-}
-
-.btn-primary:disabled, .btn-danger:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.error-message {
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-}
-
-.warning-message {
-  margin: 20px 0;
-  padding: 16px;
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-  border-radius: 6px;
-}
-
-.warning-message p {
-  margin: 8px 0;
-}
-
-.warning-message p:first-child {
-  margin-top: 0;
-}
-
-.warning-message p:last-child {
-  margin-bottom: 0;
 }
 </style>

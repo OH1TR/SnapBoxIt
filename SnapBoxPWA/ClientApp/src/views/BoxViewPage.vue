@@ -197,37 +197,7 @@ async function loadBoxContents(): Promise<void> {
 </script>
 
 <style scoped>
-.box-view-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.back-button {
-  background: #f0f0f0;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #e0e0e0;
-}
-
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
-}
+/* Most common styles removed - now in global style.css */
 
 .box-view-container {
   background: white;
@@ -260,12 +230,5 @@ async function loadBoxContents(): Promise<void> {
 .box-select:focus {
   outline: none;
   border-color: #0066cc;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 18px;
 }
 </style>

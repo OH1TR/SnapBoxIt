@@ -72,13 +72,6 @@ function navigateTo(path: string): void {
   font-size: 1.1rem;
 }
 
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 30px;
-}
-
 .menu-button {
   background: white;
   border: 2px solid #e0e0e0;
@@ -117,10 +110,4 @@ function navigateTo(path: string): void {
 .menu-button.boxes:hover { border-color: #f59e0b; }
 .menu-button.print:hover { border-color: #8b5cf6; }
 .menu-button.settings:hover { border-color: #6b7280; }
-
-@media (max-width: 768px) {
-  .menu-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

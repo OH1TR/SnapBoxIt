@@ -109,36 +109,12 @@ async function print(): Promise<void> {
 </script>
 
 <style scoped>
+/* Most common styles removed - now in global style.css */
+
 .print-page {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.back-button {
-  background: #f0f0f0;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #e0e0e0;
-}
-
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
 }
 
 .print-container {
@@ -152,56 +128,6 @@ async function print(): Promise<void> {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.radio-group {
-  display: flex;
-  gap: 20px;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  color: #2c3e50;
-}
-
-.radio-input {
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 8px;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.textarea-field {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: inherit;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.textarea-field:focus {
-  outline: none;
-  border-color: #0066cc;
 }
 
 .btn-print {
@@ -222,23 +148,5 @@ async function print(): Promise<void> {
 .btn-print:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
-}
-
-.success-message {
-  padding: 12px;
-  background-color: #d1fae5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.error-message {
-  padding: 12px;
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-  text-align: center;
 }
 </style>

@@ -363,47 +363,12 @@ async function handleDelete(): Promise<void> {
 </script>
 
 <style scoped>
+/* Most common styles removed - now in global style.css */
+
 .edit-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.back-button {
-  background: #f0f0f0;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-
-.back-button:hover {
-  background: #e0e0e0;
-}
-
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-.loading-container,
-.error-container {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.loading-container p {
-  color: #666;
-  font-size: 18px;
 }
 
 .edit-container {
@@ -473,138 +438,6 @@ async function handleDelete(): Promise<void> {
   font-size: 18px;
 }
 
-.detail-group {
-  margin-bottom: 15px;
-}
-
-.detail-group label {
-  display: block;
-  font-weight: 500;
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.readonly-field {
-  margin: 0;
-  padding: 10px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  color: #2c3e50;
-  font-size: 16px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  color: #2c3e50;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.input-field,
-.textarea-field {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: inherit;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.input-field:focus,
-.textarea-field:focus {
-  outline: none;
-  border-color: #0066cc;
-}
-
-.input-field:disabled,
-.textarea-field:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.textarea-field {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.divider {
-  border: none;
-  border-top: 2px solid #e0e0e0;
-  margin: 30px 0;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-primary,
-.btn-secondary,
-.btn-danger {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background-color: #0066cc;
-  color: white;
-  flex: 1;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0052a3;
-}
-
-.btn-primary:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #6b7280;
-  color: white;
-  flex: 1;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #4b5563;
-}
-
-.btn-secondary:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.btn-danger {
-  background-color: #dc2626;
-  color: white;
-  width: 100%;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-}
-
-.btn-danger:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
 .danger-zone {
   margin-top: 30px;
   padding: 20px;
@@ -624,50 +457,8 @@ async function handleDelete(): Promise<void> {
   margin-bottom: 15px;
 }
 
-.error-message {
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #fee;
-  color: #c00;
-  border: 1px solid #fcc;
-  border-radius: 6px;
-}
-
-/* Dialog Styles */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.dialog-content {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
+.danger-zone .btn-danger {
   width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.dialog-content h3 {
-  margin: 0 0 12px 0;
-  color: #2c3e50;
-  font-size: 20px;
-}
-
-.dialog-content p {
-  margin: 0 0 16px 0;
-  color: #666;
-  font-size: 16px;
-  line-height: 1.5;
 }
 
 .item-info {
@@ -688,44 +479,5 @@ async function handleDelete(): Promise<void> {
 .item-info .box-info {
   color: #666;
   font-size: 14px;
-}
-
-.dialog-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.btn-cancel,
-.btn-confirm {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-cancel {
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.btn-cancel:hover {
-  background-color: #d0d0d0;
-}
-
-.btn-confirm {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-confirm:hover {
-  background-color: #c82333;
-}
-
-.btn-confirm:active {
-  background-color: #bd2130;
 }
 </style>
