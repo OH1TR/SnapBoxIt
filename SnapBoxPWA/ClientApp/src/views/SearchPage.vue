@@ -178,10 +178,12 @@ async function performSearch(): Promise<void> {
   display: flex;
   gap: 10px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .search-input {
   flex: 1;
+  min-width: 0;
   padding: 12px 20px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
@@ -212,5 +214,39 @@ async function performSearch(): Promise<void> {
 .btn-search:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 600px) {
+  .search-container {
+    padding: 20px 15px;
+  }
+
+  .search-box {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-input {
+    width: 100%;
+    flex: none;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .btn-search {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}
+
+/* Tablet and smaller desktop */
+@media (max-width: 768px) {
+  .search-container {
+    padding: 25px 20px;
+  }
+
+  .search-input {
+    min-width: 200px;
+  }
 }
 </style>

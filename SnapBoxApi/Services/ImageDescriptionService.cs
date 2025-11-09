@@ -49,8 +49,6 @@ namespace SnapBoxApi.Services
             await file.CopyToAsync(memoryStream);
             BinaryData imageBinary = new BinaryData(memoryStream.ToArray());
 
-
-
             var textPart = ChatMessageContentPart.CreateTextPart("Describe this image in one sentence.");
             var imgPart = ChatMessageContentPart.CreateImagePart(imageBinary, "image/png");
 
@@ -78,7 +76,7 @@ Säännöt:
    - Jos on vain yksi selkeä pääväri, palauta taulukko, jossa on yksi arvo.
 
 4) Elektroniikan komponentit:
-   - Jos komponentin tyyppikoodi (esim. “LM7805”, “NE555”, “ATmega328P”) on LUETTAVISSA, lisää koodi ja verkkohausta löydetty komponenttiluokka tarkempaan kuvaukseen. Esimerkki: “… Tyyppikoodi ‘LM7805’; verkkohaku: ‘voltage regulator’ (5 V).”
+   - Jos komponentin tyyppikoodi (esim. ""LM7805"", ""NE555"", ""ATmega328P"") on LUETTAVISSA, lisää koodi ja verkkohausta löydetty komponenttiluokka tarkempaan kuvaukseen. Esimerkki: ""... Tyyppikoodi 'LM7805'; verkkohaku: 'voltage regulator' (5 V).""
    - Jos koodi ei ole luettavissa, älä arvaile koodia. Kuvaile komponenttia ulkoisten tuntomerkkien perusteella (kotelotyyppi, liitinmäärä, ym.).
    - Jos tyyppikoodi ei ole luettavissa, älä kerro sitä erikseen vaan jätä huomiotta.
 
@@ -93,7 +91,7 @@ Säännöt:
 8) Muotoilu ja validius:
    - Varmista, että JSON on rakenteellisesti validi (lainausmerkit, pilkut, hakasulkeet).
    - Älä käytä rivinvaihtoja tai erikoismerkkejä, jotka rikkoisivat JSONin.
-   - Älä kirjoita kuvaukseen 'kuvassa näkyy' tai 'kuva sisältää', vaan kirjoita suoraan kuvaus.
+   - Älä kirjoita kuvaukseen ""kuvassa näkyy"" tai ""kuva sisältää"", vaan kirjoita suoraan kuvaus.
    - Jos tunnistat kuvasta jotain yksilöivää, kuten tuotemerkin tai mallin, mainitse se myös title-kentässä.
 
 9) Tietoturva:
@@ -109,20 +107,33 @@ Tehtäväsi: analysoi kuva ohjeiden mukaan ja palauta vain yllä määritelty JSON-ol
 
             var itemDto = JsonSerializer.Deserialize<ItemDto>(descriptionJson);
 
-            var fullText = $"{itemDto.Title} {itemDto.Category} {itemDto.DetailedDescription} {string.Join(" ", itemDto.Colors)}";
-
-            var result = await _embeddingClient.GenerateEmbeddingsAsync(new[] { itemDto.Title, itemDto.Category, itemDto.DetailedDescription, fullText });
-            itemDto.TitleEmbedding = result.Value[0].ToFloats().ToArray();
-            itemDto.CategoryEmbedding = result.Value[1].ToFloats().ToArray();
-            itemDto.DetailedDescriptionEmbedding = result.Value[2].ToFloats().ToArray();
-            itemDto.FullTextEmbedding = result.Value[3].ToFloats().ToArray();
-
             itemDto.id = Guid.NewGuid().ToString();
             itemDto.PartitionKey = "item";
+
+            await UpdateEmbeddingsAsync(itemDto);
 
             return itemDto;
         }
 
+        public async Task UpdateEmbeddingsAsync(ItemDto itemDto)
+        {
+            var fullText = string.IsNullOrWhiteSpace(itemDto.UserDescription) 
+                ? $"{itemDto.Title} {itemDto.DetailedDescription} {string.Join(" ", itemDto.Colors)}" 
+                : $"{itemDto.Title} {itemDto.UserDescription} {string.Join(" ", itemDto.Colors)}";
+
+            var result = await _embeddingClient.GenerateEmbeddingsAsync(new[] { 
+                itemDto.Title, 
+                itemDto.Category, 
+                itemDto.DetailedDescription, 
+                fullText, 
+                itemDto.UserDescription ?? "" 
+            });
+            itemDto.TitleEmbedding = result.Value[0].ToFloats().ToArray();
+            itemDto.CategoryEmbedding = result.Value[1].ToFloats().ToArray();
+            itemDto.DetailedDescriptionEmbedding = result.Value[2].ToFloats().ToArray();
+            itemDto.FullTextEmbedding = result.Value[3].ToFloats().ToArray();
+            itemDto.UserDescriptionEmbedding= result.Value[4].ToFloats().ToArray();
+        }
 
         public async Task<float[]> GetEmbeddingAsync(string input)
         {

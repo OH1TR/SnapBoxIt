@@ -105,13 +105,7 @@ namespace SnapBoxApi.Controllers
                     return BadRequest("Item data is required.");
                 }
 
-                float[] userDescriptionEmbedding = null;
-
-                if (itemDto.UserDescription != null)
-                {
-                    userDescriptionEmbedding = await _imageDescriptionService.GetEmbeddingAsync(itemDto.UserDescription);
-                }
-                var updatedItem = await _cosmosDbService.UpdateItemAsync(id, itemDto,userDescriptionEmbedding);
+                var updatedItem = await _cosmosDbService.UpdateItemAsync(id, itemDto);
                 return Ok(updatedItem);
             }
             catch (InvalidOperationException ex)

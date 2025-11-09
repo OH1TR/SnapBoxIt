@@ -10,9 +10,11 @@ namespace SnapBoxApi.Services
     {
         const string MyPartitionKey = "item";
         private readonly Microsoft.Azure.Cosmos.Container _container;
+        private readonly ImageDescriptionService _imageDescriptionService;
 
-        public CosmosDbService(IConfiguration configuration)
+        public CosmosDbService(IConfiguration configuration, ImageDescriptionService imageDescriptionService)
         {
+            _imageDescriptionService = imageDescriptionService;
             var endpoint = configuration["CosmosDb:Endpoint"];
             var key = configuration["CosmosDb:Key"];
             var databaseName = configuration["CosmosDb:DatabaseName"];
@@ -56,7 +58,6 @@ namespace SnapBoxApi.Services
                   }
               };
             Collection<Embedding> collection = new Collection<Embedding>(embeddings);
-            // Ensure container exists (partition key path must match your ItemDto, e.g. "/partitionKey")
 
             var containerProperties = new ContainerProperties
             {
@@ -87,8 +88,7 @@ namespace SnapBoxApi.Services
                                 Path = "/FullTextEmbedding",
                                 Type = VectorIndexType.QuantizedFlat,
                             }
-                        },
-
+                        }
                 },
             };
             containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/*" });
@@ -108,7 +108,7 @@ namespace SnapBoxApi.Services
             try
             {
 
-                    data.PartitionKey = MyPartitionKey;
+                data.PartitionKey = MyPartitionKey;
 
                 await _container.CreateItemAsync(data, new PartitionKey(data.PartitionKey));
             }
@@ -191,7 +191,7 @@ namespace SnapBoxApi.Services
             }
         }
 
-        public async Task<ItemDto> UpdateItemAsync(string id, ItemSimpleDto itemDto,float[] userDescriptionEmbedding)
+        public async Task<ItemDto> UpdateItemAsync(string id, ItemSimpleDto itemDto)
         {
             try
             {
@@ -202,17 +202,16 @@ namespace SnapBoxApi.Services
                     throw new InvalidOperationException($"Item with ID {id} not found.");
                 }
 
-                // Update only the specified fields
-                if (itemDto.UserDescription != null)
-                {
-                    existingItem.UserDescriptionEmbedding = userDescriptionEmbedding;
-                    existingItem.UserDescription = itemDto.UserDescription;
-                }
+
+                existingItem.UserDescription = itemDto.UserDescription;
 
                 existingItem.Count = itemDto.Count;
 
                 // Update the UpdatedAt timestamp
                 existingItem.UpdatedAt = DateTimeOffset.UtcNow;
+
+                // Generate embeddings for all fields
+                await _imageDescriptionService.UpdateEmbeddingsAsync(existingItem);
 
                 // Replace the item in Cosmos DB
                 var response = await _container.ReplaceItemAsync(existingItem, id, new Microsoft.Azure.Cosmos.PartitionKey(MyPartitionKey));

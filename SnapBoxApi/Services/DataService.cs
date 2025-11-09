@@ -22,7 +22,8 @@ namespace SnapBoxApi.Services
             // Get embedding for the search text
             var searchVector = await _imageDescriptionService.GetEmbeddingAsync(searchText);
 
-            // Find top matches using vector search with specified count
+            // Use vector search - works excellently with Finnish language
+            // Hybrid search is not used because Cosmos DB full-text search doesn't support Finnish
             var items = await _cosmosDbService.QueryTopByFullTextEmbeddingAsync(searchVector, count);
             var result = items.Select(item =>  item.ToSimpleDto()).ToList();
             return result;
