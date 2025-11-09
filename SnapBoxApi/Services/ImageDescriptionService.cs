@@ -45,8 +45,14 @@ namespace SnapBoxApi.Services
 
         public async Task<ItemDto> GetImageDescriptionAsync(MemoryStream file)
         {
+            // Reset position to beginning to ensure we read the entire stream
+            file.Position = 0;
+            
+            // Copy to a new stream to avoid position issues
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
+            
+            // Create BinaryData from the array (stream will be disposed after using block)
             BinaryData imageBinary = new BinaryData(memoryStream.ToArray());
 
             var textPart = ChatMessageContentPart.CreateTextPart("Describe this image in one sentence.");

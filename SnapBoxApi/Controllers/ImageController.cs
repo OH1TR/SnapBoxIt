@@ -62,18 +62,19 @@ namespace SnapBoxApi.Controllers
 
                 using var originalStream = new MemoryStream();
                 await file.CopyToAsync(originalStream);
+                originalStream.Position = 0;
 
-                var upTask = UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
+                // Upload to blob storage first
+                await UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
 
-                // Kuvan analyysi
+                // Kuvan analyysi - reset position before analysis
                 originalStream.Position = 0;
                 var description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream);
                 description.BlobId = blobId;
                 description.BoxId = boxId;
                 description.Count = 1;
-                var dbTask = _cosmosService.AddItemAsync(description);
                 
-                await Task.WhenAll(upTask, dbTask);
+                await _cosmosService.AddItemAsync(description);
 
                 _logger.LogInformation($"Successfully uploaded image {blobId} for box {boxId}");
                 return Ok(description.ToSimpleDto());
@@ -96,7 +97,7 @@ namespace SnapBoxApi.Controllers
             using (var image = await Image.LoadAsync(originalStream))
             {
                 var newWidth = (int)(image.Width * 0.01 * Tools.ThumbPercent);
-                var newHeight = (int)(image.Height * 0.01 * Tools.ThumbPercent);
+                var newHeight = (int)(image.Height * 0.01 * Tools. ThumbPercent);
                 image.Mutate(x => x.Resize(newWidth, newHeight));
                 using var thumbStream = new MemoryStream();
                 await image.SaveAsync(thumbStream, new JpegEncoder());
