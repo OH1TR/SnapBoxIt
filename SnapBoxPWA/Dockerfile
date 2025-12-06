@@ -1,15 +1,15 @@
 ﻿# Build stage for Node.js (Vite)
 FROM node:20-alpine AS node-build
-WORKDIR /app/ClientApp
+WORKDIR /app
 
 # Copy package files
-COPY ClientApp/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy client app source
-COPY ClientApp/ ./
+# Copy all source files
+COPY . ./
 
 # Build the Vite app
 RUN npm run build
@@ -26,7 +26,24 @@ RUN dotnet restore
 COPY . ./
 
 # Copy the built Vite app from node-build stage
-COPY --from=node-build /app/ClientApp/dist ./wwwroot
+COPY --from=node-build /app/wwwroot ./wwwroot
 
 # Build the .NET application
-RUN doten
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+# Copy published app
+COPY --from=build /app/publish .
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Run the application
+ENTRYPOINT ["dotnet", "SnapBoxPWA.dll"]
