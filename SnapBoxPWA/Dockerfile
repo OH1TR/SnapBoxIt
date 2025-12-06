@@ -6,7 +6,7 @@ WORKDIR /app/ClientApp
 COPY ClientApp/package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy client app source
 COPY ClientApp/ ./
@@ -29,21 +29,4 @@ COPY . ./
 COPY --from=node-build /app/ClientApp/dist ./wwwroot
 
 # Build the .NET application
-RUN dotnet publish -c Release -o /app/publish --no-restore
-
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-WORKDIR /app
-
-# Copy published app
-COPY --from=build /app/publish .
-
-# Expose port
-EXPOSE 8080
-
-# Set environment variables
-ENV ASPNETCORE_URLS=http://+:8080
-ENV ASPNETCORE_ENVIRONMENT=Production
-
-# Run the application
-ENTRYPOINT ["dotnet", "SnapBoxPWA.dll"]
+RUN doten
