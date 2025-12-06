@@ -36,5 +36,3 @@ jobs:
           context: ./SnapBoxPWA
           tags: ${{ secrets.AZURE_URL }}/snapboxpwa:latest,${{ secrets.AZURE_URL }}/snapboxpwa:${{ github.sha }}
           file: ./SnapBoxPWA/Dockerfile
-          cache-from: type=registry,ref=${{ secrets.AZURE_URL }}/snapboxpwa:buildcache
-          cache-to: type=registry,ref=${{ secrets.AZURE_URL }}/snapboxpwa:buildcache,mode=max
