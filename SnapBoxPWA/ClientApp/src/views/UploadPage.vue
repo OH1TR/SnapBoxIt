@@ -26,31 +26,27 @@
             <p v-else>Selaimesi ei tue kameran käyttöä tai kameraa ei löydy.</p>
           </div>
 
-          <div v-if="cameraActive" class="camera-container">
+          <div v-if="cameraActive || previewImage" class="camera-container">
             <video
+              v-if="cameraActive"
               ref="videoElement"
               autoplay
               playsinline
               class="camera-video"
             ></video>
+            
+            <div v-if="previewImage && !cameraActive" class="preview-section">
+              <img :src="previewImage" alt="Preview" class="preview-image" />
+            </div>
+            
             <div class="camera-controls">
-              <button @click="capturePhoto" class="btn-capture" :disabled="!boxId">
+              <button @click="capturePhoto" class="btn-capture" :disabled="!boxId || (!cameraActive && uploading)">
                 📷 Ota kuva
-              </button>
-              <button @click="stopCamera" class="btn-secondary">
-                Sulje kamera
               </button>
             </div>
           </div>
 
           <canvas ref="canvasElement" style="display: none"></canvas>
-        </div>
-
-        <div v-if="previewImage" class="preview-section">
-          <img :src="previewImage" alt="Preview" class="preview-image" />
-          <button @click="retakePhoto" class="btn-secondary">
-            🔄 Ota uusi kuva
-          </button>
         </div>
       </div>
 
@@ -137,11 +133,15 @@ const cameraActive = ref<boolean>(false)
 const isSecureContext = ref<boolean>(false)
 const hasCameraSupport = ref<boolean>(false)
 let mediaStream: MediaStream | null = null
+let previewTimeout: number | null = null
 
 // Inject voice-controlled box selection and camera trigger
 const voiceSelectedBoxId = inject<any>('voiceSelectedBoxId', ref(''))
 const cameraTrigger = inject<any>('cameraTrigger', ref(0))
 const voiceReject = inject<any>('voiceReject', ref(0))
+const voiceUpdateDescription = inject<any>('voiceUpdateDescription', ref(''))
+const voiceUpdateCount = inject<any>('voiceUpdateCount', ref(null))
+const voiceUpdateTrigger = inject<any>('voiceUpdateTrigger', ref(0))
 
 // Watch for voice-selected box ID
 watch(() => voiceSelectedBoxId.value, (newBoxId) => {
@@ -166,11 +166,30 @@ watch(() => cameraTrigger.value, async () => {
   }
 })
 
-// Watch for voice reject command
+/// Watch for voice reject command
 watch(() => voiceReject.value, async () => {
   if (voiceReject.value > 0 && uploadedItem.value) {
     console.log('Reject trigger from voice command')
     await rejectItem()
+  }
+})
+
+// Watch for voice update commands
+watch(() => voiceUpdateTrigger.value, () => {
+  if (voiceUpdateTrigger.value > 0 && uploadedItem.value) {
+    console.log('Update trigger from voice command')
+    
+    // Update description if provided
+    if (voiceUpdateDescription.value) {
+      console.log('Updating userDescription to:', voiceUpdateDescription.value)
+      uploadedItem.value.userDescription = voiceUpdateDescription.value
+    }
+    
+    // Update count if provided
+    if (voiceUpdateCount.value !== null) {
+      console.log('Updating count to:', voiceUpdateCount.value)
+      uploadedItem.value.count = voiceUpdateCount.value
+    }
   }
 })
 
@@ -293,7 +312,29 @@ async function capturePhoto(): Promise<void> {
     return
   }
 
+  // If camera is not active, start it first
+  if (!cameraActive.value) {
+    // Clear any existing timeout
+    if (previewTimeout !== null) {
+      clearTimeout(previewTimeout)
+      previewTimeout = null
+    }
+    
+    // Clear preview
+    previewImage.value = null
+    
+    // Start camera and wait for it to be ready
+    await startCamera()
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+
   if (!videoElement.value || !canvasElement.value) return
+
+  // Clear any existing timeout
+  if (previewTimeout !== null) {
+    clearTimeout(previewTimeout)
+    previewTimeout = null
+  }
 
   const video = videoElement.value
   const canvas = canvasElement.value
@@ -318,19 +359,20 @@ async function capturePhoto(): Promise<void> {
     // Show preview
     previewImage.value = URL.createObjectURL(blob)
     
-    // Stop camera
+    // Stop camera temporarily
     stopCamera()
     
     // Upload image
     await uploadImage(blob)
+    
+    // After 5 seconds, clear preview and restart camera
+    previewTimeout = window.setTimeout(async () => {
+      previewImage.value = null
+      if (isCameraSupported.value) {
+        await startCamera()
+      }
+    }, 5000)
   }, 'image/jpeg', 0.9)
-}
-
-function retakePhoto(): void {
-  previewImage.value = null
-  uploadedItem.value = null
-  error.value = ''
-  startCamera()
 }
 
 async function uploadImage(blob: Blob): Promise<void> {
@@ -366,8 +408,8 @@ async function saveItem(): Promise<void> {
     const success = await apiService.saveItem(uploadedItem.value)
     if (success) {
       alert('Kohde tallennettu onnistuneesti!')
-      resetForm()
-      router.back()
+      // Clear the uploaded item data after successful save
+      uploadedItem.value = null
     } else {
       error.value = 'Tallentaminen epäonnistui'
     }
@@ -382,14 +424,14 @@ async function saveItem(): Promise<void> {
 async function rejectItem(): Promise<void> {
   if (!uploadedItem.value) return
 
-
   try {
     deleting.value = true
     error.value = ''
     
     const success = await apiService.deleteItem(uploadedItem.value.id)
     if (success) {
-      resetForm()
+      // Only clear the uploaded item data, keep camera and preview as is
+      uploadedItem.value = null
     } else {
       error.value = 'Hylätään epäonnistui'
     }
@@ -401,15 +443,11 @@ async function rejectItem(): Promise<void> {
   }
 }
 
-function resetForm(): void {
-  uploadedItem.value = null
-  previewImage.value = null
-  boxId.value = ''
-  stopCamera()
-}
-
 // Clean up camera on component unmount
 onBeforeUnmount(() => {
+  if (previewTimeout !== null) {
+    clearTimeout(previewTimeout)
+  }
   stopCamera()
 })
 </script>

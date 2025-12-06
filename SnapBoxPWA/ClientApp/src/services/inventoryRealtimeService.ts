@@ -44,6 +44,13 @@ export interface PrintLabelEvent {
   text: string
 }
 
+// Update item field event type
+export interface UpdateItemFieldEvent {
+  type: 'update_item_field'
+  field: 'userDescription' | 'count'
+  value: string | number
+}
+
 export class InventoryRealtimeService extends RealtimeService {
   private currentCallId: string | null = null
 
@@ -112,6 +119,12 @@ export class InventoryRealtimeService extends RealtimeService {
           break
         case 'reject_current_item':
           await this.handleRejectCurrentItem()
+          break
+        case 'update_item_description':
+          await this.handleUpdateItemDescription(args)
+          break
+        case 'update_item_count':
+          await this.handleUpdateItemCount(args)
           break
         case 'print_qr_label':
           await this.handlePrintQrLabel(args)
@@ -435,6 +448,64 @@ export class InventoryRealtimeService extends RealtimeService {
   }
 
   /**
+   * Handle update item description function call
+   */
+  private async handleUpdateItemDescription(args: string): Promise<void> {
+    try {
+      const { description } = JSON.parse(args)
+      console.log('Update item description requested:', description)
+      
+      // Emit update event to UI
+      this.emit('update_item_field', {
+        type: 'update_item_field',
+        field: 'userDescription',
+        value: description
+      } as UpdateItemFieldEvent)
+
+      this.sendFunctionResult(this.currentCallId!, {
+        success: true,
+        message: 'Kuvaus päivitetty',
+        description
+      })
+    } catch (error: any) {
+      console.error('Error updating item description:', error)
+      this.sendFunctionResult(this.currentCallId!, {
+        success: false,
+        error: error.message
+      })
+    }
+  }
+
+  /**
+   * Handle update item count function call
+   */
+  private async handleUpdateItemCount(args: string): Promise<void> {
+    try {
+      const { count } = JSON.parse(args)
+      console.log('Update item count requested:', count)
+      
+      // Emit update event to UI
+      this.emit('update_item_field', {
+        type: 'update_item_field',
+        field: 'count',
+        value: count
+      } as UpdateItemFieldEvent)
+
+      this.sendFunctionResult(this.currentCallId!, {
+        success: true,
+        message: 'Lukumäärä päivitetty',
+        count
+      })
+    } catch (error: any) {
+      console.error('Error updating item count:', error)
+      this.sendFunctionResult(this.currentCallId!, {
+        success: false,
+        error: error.message
+      })
+    }
+  }
+
+  /**
    * Handle print QR label function call
    */
   private async handlePrintQrLabel(args: string): Promise<void> {
@@ -555,6 +626,11 @@ TÄRKEÄÄ - HYLKÄÄMINEN:
 - VARMISTA AINA käyttäjältä ennen hylkäämistä: "Haluatko varmasti hylätä tämän kohteen?"
 - Funktio toimii vain jos käyttäjällä on auki kohde (esim. UploadPage).
 
+TÄRKEÄÄ - TIETOJEN PÄIVITTÄMINEN:
+- Kun käyttäjä sanoo "päivitä kuvaus X" tai "kuvaus X", käytä update_item_description-funktiota kuvauksella X.
+- Kun käyttäjä sanoo "päivitä lukumäärä Y" tai "määrä Y" tai "lukumäärä Y", käytä update_item_count-funktiota arvolla Y.
+- Päivitykset toimivat vain jos käyttäjällä on auki kohde jonka tietoja voi muokata.
+
 TÄRKEÄÄ - TARROJEN TULOSTUS:
 - Kun käyttäjä sanoo "tulosta laatikkotarra X" tai "tulosta QR tarra X", käytä print_qr_label-funktiota tekstillä X.
 - Kun käyttäjä sanoo "tulosta vapaamuotoinen tarra" tai "tulosta tarra", kysy käyttäjältä tekstiä ja käytä print_text_label-funktiota.
@@ -649,7 +725,7 @@ export const INVENTORY_FUNCTIONS = [
       properties: {
         boxId: {
           type: 'string',
-          description: 'Laatikon tunniste, jonka sisältö haetaan (esim. "BOX-001")'
+          description: 'Laatikon tunniste, jonka sisältö haetaan (esim. "001")'
         }
       },
       required: ['boxId']
@@ -688,7 +764,7 @@ export const INVENTORY_FUNCTIONS = [
       properties: {
         boxId: {
           type: 'string',
-          description: 'Laatikon tunniste (esim. "BOX-001")'
+          description: 'Laatikon tunniste (esim. "001")'
         }
       },
       required: ['boxId']
@@ -731,7 +807,7 @@ export const INVENTORY_FUNCTIONS = [
       properties: {
         boxId: {
           type: 'string',
-          description: 'Valittavan laatikon tunniste (esim. "BOX-001")'
+          description: 'Valittavan laatikon tunniste (esim. "001")'
         }
       },
       required: ['boxId']
@@ -744,6 +820,36 @@ export const INVENTORY_FUNCTIONS = [
     parameters: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    type: 'function',
+    name: 'update_item_description',
+    description: 'Päivitä kohteen käyttäjän kuvaus (userDescription). Käytä kun käyttäjä sanoo "päivitä kuvaus X", "kuvaus X", "lisää kuvaus X" tai haluaa muuttaa kohteen kuvausta.',
+    parameters: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'Uusi kuvaus kohteelle'
+        }
+      },
+      required: ['description']
+    }
+  },
+  {
+    type: 'function',
+    name: 'update_item_count',
+    description: 'Päivitä kohteen lukumäärä (count). Käytä kun käyttäjä sanoo "päivitä lukumäärä Y", "määrä Y", "lukumäärä Y" tai haluaa muuttaa kohteen määrää.',
+    parameters: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'number',
+          description: 'Uusi lukumäärä kohteelle'
+        }
+      },
+      required: ['count']
     }
   },
   {
@@ -801,7 +907,7 @@ export const INVENTORY_FUNCTIONS = [
       properties: {
         text: {
           type: 'string',
-          description: 'Tekstisisältö joka tulostetaan tarraan ja QR-koodiin (esim. "BOX-001")'
+          description: 'Tekstisisältö joka tulostetaan tarraan ja QR-koodiin (esim. "001")'
         }
       },
       required: ['text']

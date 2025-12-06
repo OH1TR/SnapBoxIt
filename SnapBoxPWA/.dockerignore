@@ -1,0 +1,42 @@
+﻿# .NET artifacts
+bin/
+obj/
+out/
+*.user
+*.suo
+*.cache
+
+# Node artifacts
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+ClientApp/dist/
+wwwroot/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# Tests
+**/test/**
+**/tests/**
+**/*.Test/**
+**/*.Tests/**

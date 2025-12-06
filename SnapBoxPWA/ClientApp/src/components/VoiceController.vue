@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue'
 import type { Router } from 'vue-router'
-import inventoryRealtimeService, { type NavigationEvent, type CameraControlEvent, type BoxSelectionEvent } from '../services/inventoryRealtimeService'
+import inventoryRealtimeService, { type NavigationEvent, type CameraControlEvent, type BoxSelectionEvent, type UpdateItemFieldEvent } from '../services/inventoryRealtimeService'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -27,6 +27,7 @@ const emit = defineEmits<{
   (e: 'camera', event: CameraControlEvent): void
   (e: 'select-box', boxId: string): void
   (e: 'reject'): void
+  (e: 'update-field', field: 'userDescription' | 'count', value: string | number): void
 }>()
 
 const realtimeService = inventoryRealtimeService
@@ -124,6 +125,12 @@ function setupEventHandlers() {
     handleReject()
   })
 
+  // Handle update field events
+  realtimeService.on('update_item_field', (event: UpdateItemFieldEvent) => {
+    console.log('Update field event received:', event)
+    handleUpdateField(event)
+  })
+
   // Handle errors
   realtimeService.on('error', (event: any) => {
     emit('error', event.error?.message || 'Tapahtui virhe')
@@ -214,8 +221,20 @@ function handleBoxSelection(event: BoxSelectionEvent) {
 
 function handleReject() {
   console.log('Handling reject command')
-  addMessage('system', '??? Hylätään kohde...')
+  addMessage('system', '❌ Hylätään kohde...')
   emit('reject')
+}
+
+function handleUpdateField(event: UpdateItemFieldEvent) {
+  console.log('Handling update field command:', event)
+  
+  if (event.field === 'userDescription') {
+    addMessage('system', `📝 Päivitetään kuvaus: "${event.value}"`)
+  } else if (event.field === 'count') {
+    addMessage('system', `🔢 Päivitetään lukumäärä: ${event.value}`)
+  }
+  
+  emit('update-field', event.field, event.value)
 }
 
 function disconnect() {

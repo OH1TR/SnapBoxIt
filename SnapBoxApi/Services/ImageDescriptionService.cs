@@ -147,7 +147,6 @@ Teht‰v‰si: analysoi kuva ohjeiden mukaan ja palauta vain yll‰ m‰‰ritelty JSON-ol
                 fullText
             };
             
-            // Only add UserDescription if it's not empty
             var hasUserDescription = !string.IsNullOrWhiteSpace(itemDto.UserDescription);
             if (hasUserDescription)
             {
@@ -161,7 +160,6 @@ Teht‰v‰si: analysoi kuva ohjeiden mukaan ja palauta vain yll‰ m‰‰ritelty JSON-ol
             itemDto.DetailedDescriptionEmbedding = result.Value[2].ToFloats().ToArray();
             itemDto.FullTextEmbedding = result.Value[3].ToFloats().ToArray();
             
-            // Only set UserDescriptionEmbedding if we generated one
             if (hasUserDescription)
             {
                 itemDto.UserDescriptionEmbedding = result.Value[4].ToFloats().ToArray();

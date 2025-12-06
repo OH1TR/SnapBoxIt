@@ -31,6 +31,7 @@
       @camera="handleCameraControl"
       @select-box="handleBoxSelection"
       @reject="handleReject"
+      @update-field="handleUpdateField"
     />
 
     <!-- Error notification -->
@@ -63,11 +64,17 @@ const errorMessage = ref('')
 const selectedBoxId = ref<string>('')
 const cameraTrigger = ref(0)
 const voiceReject = ref(0)
+const voiceUpdateDescription = ref<string>('')
+const voiceUpdateCount = ref<number | null>(null)
+const voiceUpdateTrigger = ref(0)
 
 // Provide selected box ID to child components
 provide('voiceSelectedBoxId', selectedBoxId)
 provide('cameraTrigger', cameraTrigger)
 provide('voiceReject', voiceReject)
+provide('voiceUpdateDescription', voiceUpdateDescription)
+provide('voiceUpdateCount', voiceUpdateCount)
+provide('voiceUpdateTrigger', voiceUpdateTrigger)
 
 function toggleVoice() {
   isVoiceActive.value = !isVoiceActive.value
@@ -104,6 +111,19 @@ function handleBoxSelection(boxId: string) {
 function handleReject() {
   console.log('Reject command received in App')
   voiceReject.value++
+}
+
+function handleUpdateField(field: 'userDescription' | 'count', value: string | number) {
+  console.log('Update field command received in App:', field, value)
+  
+  if (field === 'userDescription' && typeof value === 'string') {
+    voiceUpdateDescription.value = value
+  } else if (field === 'count' && typeof value === 'number') {
+    voiceUpdateCount.value = value
+  }
+  
+  // Increment trigger to notify watchers
+  voiceUpdateTrigger.value++
 }
 
 function handleCameraTrigger() {

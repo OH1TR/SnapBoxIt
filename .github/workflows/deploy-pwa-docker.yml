@@ -1,0 +1,40 @@
+﻿name: Build and Deploy SnapBoxPWA Docker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'SnapBoxPWA/**'
+      - '.github/workflows/deploy-pwa-docker.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.AZURE_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push to ACR
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: ./SnapBoxPWA
+          tags: ${{ secrets.AZURE_URL }}/snapboxpwa:latest,${{ secrets.AZURE_URL }}/snapboxpwa:${{ github.sha }}
+          file: ./SnapBoxPWA/Dockerfile
+          cache-from: type=registry,ref=${{ secrets.AZURE_URL }}/snapboxpwa:buildcache
+          cache-to: type=registry,ref=${{ secrets.AZURE_URL }}/snapboxpwa:buildcache,mode=max
