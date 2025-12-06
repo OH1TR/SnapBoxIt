@@ -28,8 +28,10 @@ COPY . ./
 # Copy the built Vite app from node-build stage
 COPY --from=node-build /app/wwwroot ./wwwroot
 
-# Build the .NET application
-RUN dotnet publish -c Release -o /app/publish --no-restore
+# Build and publish the .NET application
+# Set BuildingInsideDocker=true to skip npm tasks since frontend is already built
+RUN dotnet build -c Release --no-restore /p:BuildingInsideDocker=true
+RUN dotnet publish -c Release -o /app/publish --no-build /p:BuildingInsideDocker=true
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

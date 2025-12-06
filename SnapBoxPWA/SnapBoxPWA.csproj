@@ -32,18 +32,18 @@
 
   <!-- wwwroot is automatically included by Microsoft.NET.Sdk.Web, no need to explicitly include it -->
 
-  <Target Name="EnsureNodeModules" BeforeTargets="Build" Condition="!Exists('node_modules')">
+  <Target Name="EnsureNodeModules" BeforeTargets="Build" Condition="!Exists('node_modules') AND '$(BuildingInsideDocker)' != 'true'">
     <Message Text="Installing npm packages..." Importance="high" />
     <Exec Command="npm install" />
   </Target>
 
-  <Target Name="BuildViteApp" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="BuildViteApp" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' AND '$(BuildingInsideDocker)' != 'true'">
     <Message Text="Building Vite app..." Importance="high" />
     <Exec Command="npm run build" />
   </Target>
 
   <!-- Ensure Vite build runs before publish -->
-  <Target Name="PublishRunWebpack" BeforeTargets="BeforePublish">
+  <Target Name="PublishRunWebpack" BeforeTargets="BeforePublish" Condition="'$(BuildingInsideDocker)' != 'true'">
     <Message Text="Building Vite app for publish..." Importance="high" />
     <Exec Command="npm install" />
     <Exec Command="npm run build" />
