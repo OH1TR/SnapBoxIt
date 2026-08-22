@@ -1,0 +1,27 @@
+when:
+  - event: [push, manual]
+    branch: main
+
+steps:
+  # SnapBoxPWA:n image rakentuu omasta monivaiheisesta Dockerfilestaan
+  # (node/vite -> dotnet publish -> aspnet runtime).
+  #
+  # Rekisterin osoite on TLS-paate registry.rouva.li eika 192.168.100.103:5000,
+  # koska buildkit ajaa omassa kontissaan eika peri dockerd:n
+  # insecure-registries-listaa. Sama varasto molemmissa paissa.
+  - name: pwa-image
+    image: woodpeckerci/plugin-docker-buildx:6.1.1
+    settings:
+      registry: https://registry.rouva.li
+      repo: registry.rouva.li/snapboxpwa
+      # dockerfile on tyotilan juuresta, context on build-konteksti.
+      dockerfile: SnapBoxPWA/Dockerfile
+      context: SnapBoxPWA
+      platforms: linux/amd64
+      tags:
+        - latest
+        - ${CI_COMMIT_SHA:0:8}
+      username:
+        from_secret: registry_user
+      password:
+        from_secret: registry_password
