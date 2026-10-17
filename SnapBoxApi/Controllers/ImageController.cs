@@ -40,7 +40,7 @@ namespace SnapBoxApi.Controllers
         }
 
         [HttpPut("upload/{boxId}")]
-        public async Task<IActionResult> UploadImage(string boxId, IFormFile file)
+        public async Task<IActionResult> UploadImage(string boxId, IFormFile file, [FromForm] ItemDescriptionInput? input)
         {
             try
             {
@@ -71,13 +71,37 @@ namespace SnapBoxApi.Controllers
                 await UploadImageToBlobAsync(originalStream, blobId, file.ContentType);
                 _logger.LogInformation($"Blob upload completed for {blobId}");
 
-                // Kuvan analyysi - reset position before analysis
-                originalStream.Position = 0;
-                _logger.LogInformation($"Starting image analysis for {blobId}, stream position: {originalStream.Position}, length: {originalStream.Length}");
-                var description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream, file.ContentType);
+                ItemDto description;
+                if (!string.IsNullOrWhiteSpace(input?.Title))
+                {
+                    // Kuvaus tuli valmiina asiakkaalta, kuvan analyysi ohitetaan
+                    _logger.LogInformation($"Using client-provided description for {blobId}");
+                    description = new ItemDto
+                    {
+                        Title = input.Title,
+                        Category = string.IsNullOrWhiteSpace(input.Category) ? "muu" : input.Category,
+                        DetailedDescription = input.DetailedDescription ?? string.Empty,
+                        Colors = input.Colors ?? new(),
+                        UserDescription = string.IsNullOrWhiteSpace(input.UserDescription) ? null : input.UserDescription
+                    };
+                    await _imageDescriptionService.UpdateEmbeddingsAsync(description);
+                }
+                else
+                {
+                    // Kuvan analyysi - reset position before analysis
+                    originalStream.Position = 0;
+                    _logger.LogInformation($"Starting image analysis for {blobId}, stream position: {originalStream.Position}, length: {originalStream.Length}");
+                    description = await _imageDescriptionService.GetImageDescriptionAsync(originalStream, file.ContentType);
+
+                    if (!string.IsNullOrWhiteSpace(input?.UserDescription))
+                    {
+                        description.UserDescription = input.UserDescription;
+                        await _imageDescriptionService.UpdateEmbeddingsAsync(description);
+                    }
+                }
                 description.BlobId = blobId;
                 description.BoxId = boxId;
-                description.Count = 1;
+                description.Count = input?.Count ?? 1;
                 
                 _logger.LogInformation($"Image analysis completed, saving to database");
                 await _cosmosService.AddItemAsync(description);

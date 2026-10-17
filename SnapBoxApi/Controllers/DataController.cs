@@ -33,9 +33,8 @@ namespace SnapBoxApi.Controllers
         {
             try
             {
-                if (request.Count > 10)
-                    request.Count = 10;
-                var items = await _dataService.FindItems(request.Query, request.Count);
+                request.Count = Math.Clamp(request.Count, 1, 10);
+                var items = await _dataService.FindItems(request.Query, request.Count, request.UseVectorSearch);
                 return Ok(items);
             }
             catch (Exception ex)
@@ -44,6 +43,24 @@ namespace SnapBoxApi.Controllers
             }
         }
 
+
+        [HttpGet("Item/{id}")]
+        public async Task<ActionResult<ItemSimpleDto>> GetItem(string id)
+        {
+            try
+            {
+                var item = await _cosmosDbService.GetItemAsync(id);
+                if (item == null)
+                {
+                    return NotFound("Item not found.");
+                }
+                return Ok(item.ToSimpleDto());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         [HttpGet("Image/{blobId}")]
         public async Task<IActionResult> GetImage(string blobId, [FromQuery] bool thumb = false)

@@ -17,16 +17,22 @@ namespace SnapBoxApi.Services
             _blobServiceClient = blobServiceClient;
         }
 
-        public async Task<List<ItemSimpleDto>> FindItems(string searchText, int count = 5)
+        public async Task<List<ItemSimpleDto>> FindItems(string searchText, int count = 5, bool useVectorSearch = true)
         {
-            // Get embedding for the search text
-            var searchVector = await _imageDescriptionService.GetEmbeddingAsync(searchText);
+            // Substring matches first: vector search cannot tell component codes like "BC817" apart.
+            // Cosmos DB full-text search doesn't support Finnish, but CONTAINS is plain substring matching.
+            var items = await _cosmosDbService.QueryByTextAsync(searchText, count);
 
-            // Use vector search - works excellently with Finnish language
-            // Hybrid search is not used because Cosmos DB full-text search doesn't support Finnish
-            var items = await _cosmosDbService.QueryTopByFullTextEmbeddingAsync(searchVector, count);
-            var result = items.Select(item =>  item.ToSimpleDto()).ToList();
-            return result;
+            if (useVectorSearch && items.Count < count)
+            {
+                // Fill the rest with vector search - works excellently with Finnish language
+                var searchVector = await _imageDescriptionService.GetEmbeddingAsync(searchText);
+                var vectorItems = await _cosmosDbService.QueryTopByFullTextEmbeddingAsync(searchVector, count);
+                var found = items.Select(i => i.id).ToHashSet();
+                items.AddRange(vectorItems.Where(i => !found.Contains(i.id)).Take(count - items.Count));
+            }
+
+            return items.Select(item => item.ToSimpleDto()).ToList();
         }
 
         public async Task<bool> DeleteItem(string itemId)

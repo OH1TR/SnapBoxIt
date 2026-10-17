@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
@@ -23,6 +24,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Azure App Servicen etupää lisää asiakkaan osoitteen X-Forwarded-Forin viimeiseksi;
+// vain se luetaan, jotta asiakas ei voi väärentää osoitettaan (BasicAuthin lukitus)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+    options.ForwardLimit = 1;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<BlobServiceClient>(sp =>
     new BlobServiceClient(new Uri(builder.Configuration.GetConnectionString("AzureBlobConnection"))));
@@ -33,6 +45,8 @@ builder.Services.AddScoped<ImageDescriptionService>();
 builder.Services.AddScoped<DataService>();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Enable CORS before HTTPS redirection and other middleware
 // This ensures CORS headers are added to all responses, including errors

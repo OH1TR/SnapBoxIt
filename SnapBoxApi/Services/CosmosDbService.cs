@@ -166,6 +166,44 @@ namespace SnapBoxApi.Services
             return results;
         }
 
+        /// <summary>
+        /// Case-insensitive substring search. Every word of the query must appear
+        /// in at least one of the text fields; newest items first.
+        /// </summary>
+        public async Task<List<ItemDto>> QueryByTextAsync(string text, int topN)
+        {
+            var words = (text ?? string.Empty)
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(8)
+                .ToList();
+            if (words.Count == 0)
+            {
+                return new List<ItemDto>();
+            }
+
+            var conditions = words.Select((_, i) =>
+                $"(CONTAINS(c.Title, @w{i}, true) OR CONTAINS(c.DetailedDescription, @w{i}, true) " +
+                $"OR CONTAINS(c.UserDescription, @w{i}, true) OR CONTAINS(c.Category, @w{i}, true))");
+            var queryDefinition = new QueryDefinition(
+                $"SELECT TOP {topN} * FROM c WHERE {string.Join(" AND ", conditions)} ORDER BY c.CreatedAt DESC");
+            for (var i = 0; i < words.Count; i++)
+            {
+                queryDefinition = queryDefinition.WithParameter($"@w{i}", words[i]);
+            }
+
+            var iterator = _container.GetItemQueryIterator<ItemDto>(queryDefinition);
+
+            var results = new List<ItemDto>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                results.AddRange(response);
+            }
+
+            return results;
+        }
+
         public async Task DeleteItemAsync(string itemId)
         {
             try

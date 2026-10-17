@@ -4,5 +4,6 @@ namespace SnapBoxApi.Model
     {
         public string Query { get; set; } = string.Empty;
         public int Count { get; set; } = 5;
+        public bool UseVectorSearch { get; set; } = true;
     }
 }
