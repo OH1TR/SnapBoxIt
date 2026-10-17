@@ -41,8 +41,9 @@ namespace SnapBoxApi.Services
                 throw new ArgumentException("Item ID cannot be null or empty.", nameof(itemId));
 
             var item = await _cosmosDbService.GetItemAsync(itemId);
+            if (item == null)
+                return false;
 
-            item.BlobId = item?.BlobId ?? string.Empty;
             if (string.IsNullOrWhiteSpace(item.BlobId))
                 throw new InvalidOperationException("Item does not have a valid BlobId.");
 

@@ -245,6 +245,12 @@ namespace SnapBoxApi.Services
 
                 existingItem.Count = itemDto.Count;
 
+                // Clients send the whole item, so an unchanged BoxId is a no-op and a new one moves the item
+                if (!string.IsNullOrWhiteSpace(itemDto.BoxId))
+                {
+                    existingItem.BoxId = itemDto.BoxId;
+                }
+
                 // Update the UpdatedAt timestamp
                 existingItem.UpdatedAt = DateTimeOffset.UtcNow;
 
